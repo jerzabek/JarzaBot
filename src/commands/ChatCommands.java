@@ -100,8 +100,8 @@ public class ChatCommands {
         builder.appendField(Util.cmdinfo[Util.cmdinfo.length - x][0],
             Util.cmdinfo[Util.cmdinfo.length - x][1], false);
       }
-
       RequestBuffer.request(() -> event.getChannel().sendMessage(builder.build()));
+
     });
 
     ChatCommands.commandMap.put("test", (event, args) -> {
