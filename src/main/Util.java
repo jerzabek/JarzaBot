@@ -64,7 +64,7 @@ public class Util {
       try {
         channel.sendMessage(message);
       } catch (DiscordException e) {
-        System.err.println("Hmmm shit went sideways... Here's why: ");
+        System.err.println("Couldn't send message. Here's why:");
         e.printStackTrace();
       }
     });

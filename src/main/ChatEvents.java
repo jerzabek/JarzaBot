@@ -36,6 +36,8 @@ public class ChatEvents {
   @EventSubscriber public void onMessageReceived(MessageReceivedEvent event) {
     if (event.getAuthor().isBot ())
       return;
+    if(!MainBot.cli.isReady())
+      return;
 
     int in = new Random().nextInt(100);
     // if (!MemeCL.memes.containsKey(event.getAuthor().getLongID())) {
@@ -120,6 +122,8 @@ public class ChatEvents {
   }
 
   @EventSubscriber public void onMessagePinned(MessagePinEvent event) {
+    if(!MainBot.cli.isReady())
+      return;
     if(!DataStore.getPinbu(event.getGuild().getLongID()).equals(0)) {
       IMessage last = event.getChannel().getPinnedMessages().get(event.getChannel().getPinnedMessages().size() - 1);
       if (event.getChannel().getPinnedMessages().size() >= 45) {

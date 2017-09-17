@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import commands.moderation.Permission;
 import dataStore.DataStore;
+import db.DataManager;
 import main.MainBot;
 import main.Util;
 import org.slf4j.Logger;
@@ -37,7 +38,8 @@ public class ChatCommands {
     ChatCommands.commandMap.put("logoff", (event, args) -> {
       if (event.getAuthor().getLongID() == Util.jarza) {
         Util.sendMessage(event.getChannel(), "Turning off...");
-        MainBot.cli.logout();
+        RequestBuffer.request(() -> MainBot.cli.logout());
+        DataManager.finish();
         System.exit(0);
       }
     });
