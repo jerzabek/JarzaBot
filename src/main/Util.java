@@ -6,6 +6,8 @@ import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
+import java.time.LocalDateTime;
+
 public class Util {
 
   public static String prefix = "j.";
@@ -57,6 +59,10 @@ public class Util {
   static IDiscordClient getBuiltDiscordClient(String token) {
     return new ClientBuilder().withToken(token).build();
 
+  }
+
+  public static String toTimeStamp(LocalDateTime a){
+    return a.getDayOfMonth() + "/" + a.getMonth().getValue() + "/" + a.getYear() + " - " + a.getHour() + ":" + a.getMinute();
   }
 
   public static void sendMessage(IChannel channel, String message) {

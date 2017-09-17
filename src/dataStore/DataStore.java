@@ -14,7 +14,7 @@ import sx.blah.discord.util.RequestBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
+@Deprecated
 public class DataStore {
 
   private static MessageHistory m;

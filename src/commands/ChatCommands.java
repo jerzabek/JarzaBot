@@ -31,8 +31,8 @@ public class ChatCommands {
       //j.rule meme allow everyone botcommands
       //j.rule satansbae deny jarza bot
       //[deny or allow] [command name] (user default: everyone) (channel default: all) (role default: everyone)
-      DataStore.setPermission(Permission.commandParse(args, event.getGuild().getLongID()), event.getGuild().getLongID());
-
+//      DataStore.setPermission(Permission.commandParse(args, event.getGuild().getLongID()), event.getGuild().getLongID());
+      DataManager.setPermission(Permission.commandParse(args, event.getGuild().getLongID()), event.getGuild().getLongID());
     });
 
     ChatCommands.commandMap.put("logoff", (event, args) -> {

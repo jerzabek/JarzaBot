@@ -1,16 +1,13 @@
 package commands.moderation;
 
 import commands.ChatCommands;
-import dataStore.DataStore;
+import db.DataManager;
 import main.MainBot;
 import main.Util;
-import sun.applet.Main;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IRole;
-import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.Permissions;
 
-import javax.xml.crypto.Data;
 import java.util.EnumSet;
 
 public class ModerationCL {
@@ -33,9 +30,9 @@ public class ModerationCL {
     });
 
     ChatCommands.commandMap.put("warn", (event, args) -> {
-      if (DataStore.getWarnrole(event.getGuild().getLongID()) > -1) {
+      if (DataManager.getWarnrole(event.getGuild().getLongID()) > -1) {
         if (!event.getAuthor().getRolesForGuild(event.getGuild())
-            .contains(event.getGuild().getRoleByID(DataStore.getWarnrole(event.getGuild().getLongID())))) {
+            .contains(event.getGuild().getRoleByID(DataManager.getWarnrole(event.getGuild().getLongID())))) {
           Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
           return;
         }
@@ -149,22 +146,22 @@ public class ModerationCL {
         if (event.getGuild().getChannelsByName(args.get(0)).size() == 0) {
           Util.sendMessage(event.getChannel(), "*Error: Invalid channel*");
         }else{
-          DataStore.setPinbu(event.getGuild().getLongID(), event.getGuild().getChannelsByName(args.get(0)).get(0).getLongID());
+          DataManager.setPinbu(event.getGuild().getLongID(), event.getGuild().getChannelsByName(args.get(0)).get(0).getLongID());
           Util.sendMessage(event.getChannel(), "*Success!*");
         }
       }else{
-        if(DataStore.getPinbu(event.getGuild().getLongID()).equals(0L)){
+        if(DataManager.getPinbu(event.getGuild().getLongID()).equals(0L)){
           IChannel ps = event.getGuild().createChannel("pins");
           if(event.getGuild().getChannelsByName("pins").size() == 0){
             ps.overrideRolePermissions(event.getGuild().getEveryoneRole(), null, EnumSet.of(Permissions.SEND_MESSAGES));
             ps.overrideUserPermissions(MainBot.cli.getOurUser(), EnumSet.of(Permissions.SEND_MESSAGES), null);
-            DataStore.setPinbu(event.getGuild().getLongID(), ps.getLongID());
+            DataManager.setPinbu(event.getGuild().getLongID(), ps.getLongID());
           }else{
-            DataStore.setPinbu(event.getGuild().getLongID(), ps.getLongID());
+            DataManager.setPinbu(event.getGuild().getLongID(), ps.getLongID());
           }
           Util.sendMessage(event.getChannel(), "*Success! Pins will be stored in " + ps.getName() + "*");
         }else{
-          DataStore.setPinbu(event.getGuild().getLongID(), 0l);
+          DataManager.setPinbu(event.getGuild().getLongID(), 0l);
           Util.sendMessage(event.getChannel(), "*Success! Pins will no longer be backed up.");
         }
       }

@@ -1,6 +1,7 @@
 package commands.moderation;
 
 import dataStore.DataStore;
+import db.DataManager;
 import main.MainBot;
 import main.Util;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
@@ -10,14 +11,15 @@ import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.EmbedBuilder;
 import sx.blah.discord.util.RequestBuffer;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class Moderation {
 
   public static void warn(Long user, String reason, MessageReceivedEvent event) {
      if (MainBot.cli.getUserByID(user) != null) {
-      if(DataStore.getKickp(event.getGuild().getLongID()) > 0 || DataStore.getBanp(event.getGuild().getLongID()) > 0){
-        DataStore.warn(new Warning(event.getAuthor().getLongID(), user, event.getGuild().getLongID(), reason, false, 0L));
+      if(DataManager.getKickp(event.getGuild().getLongID()) > 0 || DataManager.getBanp(event.getGuild().getLongID()) > 0){
+        DataManager.warn(new Warning(event.getAuthor().getLongID(), user, event.getGuild().getLongID(), reason, false, 0L, Util.toTimeStamp(event.getMessage().getTimestamp())));
         Util.sendMessage(event.getChannel(),
             "Warned *" + event.getGuild().getUserByID(user).getName() + "#" + event.getGuild().getUserByID(user).getDiscriminator() + "* for *'" + reason + "'*.");
         checkStuff(user, reason, event);
@@ -31,12 +33,12 @@ public class Moderation {
   public static void warnp(int warnings, Punishments effect, MessageReceivedEvent event) {
     switch (effect) {
       case ban:
-        DataStore.setBanp(event.getGuild().getLongID(), warnings);
+        DataManager.setBanp(event.getGuild().getLongID(), warnings);
         Util.sendMessage(event.getChannel(),
             "**>Set punishment for " + warnings + " warnings to ban.**");
         break;
       case kick:
-        DataStore.setKickp(event.getGuild().getLongID(), warnings);
+        DataManager.setKickp(event.getGuild().getLongID(), warnings);
         Util.sendMessage(event.getChannel(),
             "**>Set punishment for " + warnings + " warnings to kick.**");
         break;
@@ -45,11 +47,11 @@ public class Moderation {
 
   public static void clearWarn(int warnId, Long user, MessageReceivedEvent event) {
     List<Warning> w = (warnId == -1 ?
-        DataStore.getWarns(event.getGuild().getLongID()) :
-        DataStore.getWarns(event.getGuild().getLongID(), user));
+      DataManager.getWarns(event.getGuild().getLongID()) :
+      DataManager.getWarns(event.getGuild().getLongID(), user));
     if (warnId > -1) {
       if (w.get(warnId) != null) {
-        DataStore.clearWarns(w.get(warnId).msgid);
+        DataManager.clearWarns(event.getGuild().getLongID(), user, event.getAuthor().getLongID(), warnId);
         Util.sendMessage(event.getChannel(),
             "**>Removed *" + event.getGuild().getUserByID(user).getName() + "'s* warning.**");
 
@@ -66,10 +68,11 @@ public class Moderation {
       // }
     } else if (warnId == -1) {
       for(Warning wt : w){
-        DataStore.clearWarns(wt.msgid);
+//        DataManager.clearWarns(wt.msgid);
+
       }
-      Util.sendMessage(event.getChannel(),
-          "**>Removed all of *" + event.getGuild().getUserByID(user).getName() + "'s* warnings.**");
+      Util.sendMessage(event.getChannel(), "Removing all warnings is currently disabled :/");
+//      Util.sendMessage(event.getChannel(), "**>Removed all of *" + event.getGuild().getUserByID(user).getName() + "'s* warnings.**");
     } else {
       Util.sendMessage(event.getChannel(), "**>Error: bad warning!**");
     }
@@ -80,8 +83,8 @@ public class Moderation {
 
   public static void listWarns(Long user, String mode, MessageReceivedEvent event) {
     List<Warning> group = (mode.equals("a") ?
-        DataStore.getWarns(event.getGuild().getLongID()) :
-        DataStore.getWarns(event.getGuild().getLongID(), user));
+        DataManager.getWarns(event.getGuild().getLongID()) :
+      DataManager.getWarns(event.getGuild().getLongID(), user));
 
     // TODO: give ya the option to switch
 
@@ -130,12 +133,12 @@ public class Moderation {
   public static void setWarnRole(IRole role, MessageReceivedEvent event) {
     boolean authorMod = false;
 
-    if(!DataStore.getModrole(event.getGuild().getLongID()).equals(-1L)){
-      authorMod = event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(DataStore.getModrole(event.getGuild().getLongID())));
+    if(!DataManager.getModrole(event.getGuild().getLongID()).equals(-1L)){
+      authorMod = event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(DataManager.getModrole(event.getGuild().getLongID())));
       for(IRole a : event.getAuthor().getRolesForGuild(event.getGuild())){
         System.out.println(a.getLongID());
       }
-      System.out.println(DataStore.getModrole(event.getGuild().getLongID()));
+      System.out.println(DataManager.getModrole(event.getGuild().getLongID()));
     }else{
       Util.sendMessage(event.getChannel(),
           "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
@@ -144,7 +147,7 @@ public class Moderation {
     }
 
     if (authorMod) {
-      DataStore.setWarnrole(event.getGuild().getLongID(), role.getLongID());
+      DataManager.setWarnrole(event.getGuild().getLongID(), role.getLongID());
       Util.sendMessage(event.getChannel(), "**>Set warning role to: *" + role.getName() + "*.**");
     } else {
       Util.sendMessage(event.getChannel(),
@@ -155,14 +158,14 @@ public class Moderation {
   public static void setModRole(IRole role, MessageReceivedEvent event) {
     boolean authorMod;
 
-    if(!DataStore.getModrole(event.getGuild().getLongID()).equals(-1L)){
-      authorMod = event.getAuthor().getRolesForGuild(event.getGuild()) .contains(DataStore.getModrole(event.getGuild().getLongID()));
+    if(!DataManager.getModrole(event.getGuild().getLongID()).equals(-1L)){
+      authorMod = event.getAuthor().getRolesForGuild(event.getGuild()) .contains(DataManager.getModrole(event.getGuild().getLongID()));
     }else{
       authorMod = true;
     }
 
     if (authorMod) {
-      DataStore.setModrole(event.getGuild().getLongID(), role.getLongID());
+      DataManager.setModrole(event.getGuild().getLongID(), role.getLongID());
       Util.sendMessage(event.getChannel(), "**>Set bot moderator role to: *" + role.getName() + "*.**");
     } else {
       Util.sendMessage(event.getChannel(),
@@ -171,15 +174,15 @@ public class Moderation {
   }
 
   private static void checkStuff(Long user, String reason, MessageReceivedEvent event) {
-    List<Warning> warnings = DataStore.getWarns(event.getGuild().getLongID(), user);
+    List<Warning> warnings = DataManager.getWarns(event.getGuild().getLongID(), user);
     warnings.removeIf(a -> a.cleared);
-    if (DataStore.getBanp(event.getGuild().getLongID()) != -1
-        && warnings.size() >= DataStore.getBanp(event.getGuild().getLongID())) {
+    if (DataManager.getBanp(event.getGuild().getLongID()) != -1
+        && warnings.size() >= DataManager.getBanp(event.getGuild().getLongID())) {
       Util.sendMessage(event.getChannel(), "**Banned *" + event.getGuild().getUserByID(user)
           + "* because they reached the warning limit.**");
       event.getGuild().banUser(event.getGuild().getUserByID(user), reason);
-    } else if (DataStore.getKickp(event.getGuild().getLongID()) != -1
-        && warnings.size() >= DataStore.getKickp(event.getGuild().getLongID())) {
+    } else if (DataManager.getKickp(event.getGuild().getLongID()) != -1
+        && warnings.size() >= DataManager.getKickp(event.getGuild().getLongID())) {
       Util.sendMessage(event.getChannel(), "**Kicked *" + event.getGuild().getUserByID(user)
           + "* because they reached the warning limit.**");
       event.getGuild().kickUser(event.getGuild().getUserByID(user), reason);
@@ -188,7 +191,7 @@ public class Moderation {
 
   public static boolean hasPermission(String command, IUser user, Long guildid, Long channelid){
     boolean has = true;
-    for(Permission p : DataStore.getPerms(guildid)){
+    for(Permission p : DataManager.getPerms(guildid)){
 //      has = p.value;
       if(p.command.equals(command)) {
         if(p.channel == 0L || p.channel.equals(channelid)){
@@ -212,6 +215,6 @@ public class Moderation {
   }
 
   public static void setPermission(IMessage m){
-    DataStore.setPermission(Permission.toPerms(m).get(1), m.getGuild().getLongID());
+    DataManager.setPermission(Permission.toPerms(m).get(1), m.getGuild().getLongID());
   }
 }

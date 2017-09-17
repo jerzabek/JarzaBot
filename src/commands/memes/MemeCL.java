@@ -20,6 +20,7 @@ import javax.imageio.ImageIO;
 import commands.ChatCommands;
 import commands.moderation.Warning;
 import dataStore.DataStore;
+import db.DataManager;
 import main.MainBot;
 import main.Util;
 import sx.blah.discord.handle.obj.IEmbed;
@@ -35,7 +36,7 @@ public class MemeCL {
   public static void init() {
 
     ChatCommands.commandMap.put("meme", (event, args) -> {
-      IMessage meme = DataStore.getMeme(event.getGuild().getLongID());
+      Meme meme = DataManager.getMeme(event.getGuild().getLongID());
       if (args.size() > 0) {
         String name = "";
         int c = 0;
@@ -47,13 +48,13 @@ public class MemeCL {
             name += a + " ";
           }
         }
-        meme = DataStore.getMemes(MainBot.cli.getUsersByName(name, true).get(0).getLongID(), event.getGuild().getLongID());
+        meme = DataManager.getMemes(MainBot.cli.getUsersByName(name, true).get(0).getLongID(), event.getGuild().getLongID());
       }
 
 //      Long crt = Long.parseLong(meme.getFormattedContent().split("\n")[1]);
-      Long crt = Long.parseLong(meme.getFormattedContent().substring(0, 18));
+      Long crt = Long.parseLong(meme.text.substring(0, 18));
 //      Long guild = Long.parseLong(meme.getFormattedContent().split("\n")[0]);
-      String msg = meme.getFormattedContent().substring(38);
+      String msg = meme.text.substring(38);
 //      Long guild = Long.parseLong(meme.getFormattedContent().substring(19, 37));
       String tabs;
       tabs = "\n";

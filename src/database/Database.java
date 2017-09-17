@@ -49,7 +49,7 @@ public class Database {
         case memes:
           set = st.executeQuery("select * from memes where guild = " + event.getGuild());
           while (set.next()) {
-            res.add(new Meme(set.getString("text"), set.getLong("user"), set.getLong("guild")));
+//            res.add(new Meme(set.getString("text"), set.getLong("user"), set.getLong("guild")));
           }
           break;
         case settings:

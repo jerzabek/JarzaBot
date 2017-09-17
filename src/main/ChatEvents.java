@@ -17,8 +17,10 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 
 import commands.ChatCommands;
+import commands.memes.Meme;
 import commands.moderation.Moderation;
 import dataStore.DataStore;
+import db.DataManager;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.impl.events.guild.GuildCreateEvent;
@@ -81,7 +83,12 @@ public class ChatEvents {
 
     if (in <= 8) {
       if (!Util.botCommand(event.getMessage().getContent()) && event.getMessage().getFormattedContent().length() > 0) {
-        DataStore.saveMeme(event.getAuthor().getLongID(), event.getGuild().getLongID(), event.getMessage().getFormattedContent());
+        //event.getAuthor().getLongID(), event.getGuild().getLongID(), event.getMessage().getFormattedContent()
+        String[] atts = new String[event.getMessage().getAttachments().size()];
+        for(int i = 0; i <  event.getMessage().getAttachments().size(); i++){
+          atts[i] =  event.getMessage().getAttachments().get(i).getUrl();
+        }
+        DataManager.saveMeme(new Meme(event.getMessage().getFormattedContent(),event.getAuthor().getLongID(), event.getGuild().getLongID(), Util.toTimeStamp(event.getMessage().getTimestamp()), atts));
       }
     }
     if (!event.getMessage().getContent().startsWith(Util.prefix))
@@ -110,7 +117,7 @@ public class ChatEvents {
   }
 
   @EventSubscriber public void onReady(ReadyEvent event) {
-    DataStore.init();
+    DataManager.init();
   }
 
   @EventSubscriber public void onGuildCreate(GuildCreateEvent event) {
@@ -124,7 +131,7 @@ public class ChatEvents {
   @EventSubscriber public void onMessagePinned(MessagePinEvent event) {
     if(!MainBot.cli.isReady())
       return;
-    if(!DataStore.getPinbu(event.getGuild().getLongID()).equals(0)) {
+    if(!DataManager.getPinbu(event.getGuild().getLongID()).equals(0)) {
       IMessage last = event.getChannel().getPinnedMessages().get(event.getChannel().getPinnedMessages().size() - 1);
       if (event.getChannel().getPinnedMessages().size() >= 45) {
         if (Util.gmode) {
@@ -153,7 +160,7 @@ public class ChatEvents {
     }
     RequestBuffer.request(() -> {
       try {
-        event.getGuild().getChannelByID(DataStore.getPinbu(event.getGuild().getLongID())).sendMessage(bub.build());
+        event.getGuild().getChannelByID(DataManager.getPinbu(event.getGuild().getLongID())).sendMessage(bub.build());
       } catch (DiscordException e) {
         System.err.println("Hmmm shit went sideways... Here's why: ");
         e.printStackTrace();
