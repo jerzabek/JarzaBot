@@ -1,6 +1,5 @@
 package commands.moderation;
 
-import dataStore.DataStore;
 import db.DataManager;
 import main.MainBot;
 import main.Util;
@@ -10,8 +9,6 @@ import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.EmbedBuilder;
 import sx.blah.discord.util.RequestBuffer;
-
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class Moderation {
@@ -51,7 +48,7 @@ public class Moderation {
       DataManager.getWarns(event.getGuild().getLongID(), user));
     if (warnId > -1) {
       if (w.get(warnId) != null) {
-        DataManager.clearWarns(event.getGuild().getLongID(), user, event.getAuthor().getLongID(), warnId);
+        DataManager.clearWarns(event.getChannel(), event.getGuild().getLongID(), user, event.getAuthor().getLongID(), warnId);
         Util.sendMessage(event.getChannel(),
             "**>Removed *" + event.getGuild().getUserByID(user).getName() + "'s* warning.**");
 
@@ -98,15 +95,16 @@ public class Moderation {
       for (Warning a : group) {
         if (!a.cleared) {
           builder.appendField("**'" + a.reason + "'**",
-              "Warning for: " + event.getGuild().getUserByID(a.victim).getName() + " - by *"
+              "Warning for: " + event.getGuild().getUserByID(a.victim).getName() + "#" + event.getGuild().getUserByID(a.victim).getDiscriminator() + " - by *"
                   + event.getGuild().getUserByID(a.user).getName() + "#"
                   + event.getGuild().getUserByID(a.user).getDiscriminator() + "*",
               false);
         } else {
           builder.appendField("**~~'" + a.reason + "'~~**",
-              "Warning for: " + event.getGuild().getUserByID(a.victim).getName() + " - by *~~"
+              "Warning for: " + event.getGuild().getUserByID(a.victim).getName() + "#" + event.getGuild().getUserByID(a.victim).getDiscriminator() + " - by *~~"
                   + event.getGuild().getUserByID(a.user).getName() + "#"
-                  + event.getGuild().getUserByID(a.user).getDiscriminator() + "~~* (cleared)",
+                  + event.getGuild().getUserByID(a.user).getDiscriminator() + "~~* (cleared by "
+                + event.getGuild().getUserByID(a.clearedby).getName() + "#" + event.getGuild().getUserByID(a.clearedby).getDiscriminator() + ")",
               false);
         }
       }
@@ -115,13 +113,13 @@ public class Moderation {
       String m = "";
       for (Warning a : group) {
         if (!a.cleared) {
-          m += "**'" + a.reason + "'**\n^Warning for: " + event.getGuild().getUserByID(a.victim).getName() + " - by *"
+          m += "**'" + a.reason + "'**\n^Warning for: " + event.getGuild().getUserByID(a.victim).getName() + "#" + event.getGuild().getUserByID(a.victim).getDiscriminator() + " - by *"
                   + event.getGuild().getUserByID(a.user).getName() + "#"
                   + event.getGuild().getUserByID(a.user).getDiscriminator() + "*\n";
         } else {
-          m += "**~~'" + a.reason + "'~~**\n^Warning for: " + event.getGuild().getUserByID(a.victim).getName() + " - by *~~"
+          m += "**~~'" + a.reason + "'~~**\n^Warning for: " + event.getGuild().getUserByID(a.victim).getName() + "#" + event.getGuild().getUserByID(a.victim).getDiscriminator() + " - by *~~"
                   + event.getGuild().getUserByID(a.user).getName() + "#"
-                  + event.getGuild().getUserByID(a.user).getDiscriminator() + "~~* (cleared)\n";
+                  + event.getGuild().getUserByID(a.user).getDiscriminator() + "~~* (cleared by " + event.getGuild().getUserByID(a.clearedby).getName() + "#" + event.getGuild().getUserByID(a.clearedby).getDiscriminator() + ")\n";
         }
       }
       Util.sendMessage(event.getChannel(), m);
@@ -133,8 +131,12 @@ public class Moderation {
   public static void setWarnRole(IRole role, MessageReceivedEvent event) {
     boolean authorMod = false;
 
-    if(!DataManager.getModrole(event.getGuild().getLongID()).equals(-1L)){
-      authorMod = event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(DataManager.getModrole(event.getGuild().getLongID())));
+    if(!DataManager.getModrole(event.getGuild().getLongID()).contains(-1L)){
+      for(Long l : DataManager.getModrole(event.getGuild().getLongID())){
+        if(event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(l)))
+          authorMod = true;
+      }
+
       for(IRole a : event.getAuthor().getRolesForGuild(event.getGuild())){
         System.out.println(a.getLongID());
       }

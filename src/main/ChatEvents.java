@@ -104,20 +104,23 @@ public class ChatEvents {
 
     if (msg.length == 0)
       return;
-
-    if (ChatCommands.commandMap.containsKey(command) && Moderation.hasPermission(command, event.getAuthor(), event.getGuild().getLongID(), event.getChannel().getLongID())) {
+    try {
+      //    if (ChatCommands.commandMap.containsKey(command) && Moderation.hasPermission(command, event.getAuthor(), event.getGuild().getLongID(), event.getChannel().getLongID())) {
       if (!Util.gmode) {
         ChatCommands.commandMap.get(command).run(event, args);
       } else if (event.getAuthor().getLongID() == Util.jarza) {
         ChatCommands.commandMap.get(command).run(event, args);
       }
       Util.totcom++;
+      //    }
+    }catch (Throwable e){
+      e.printStackTrace();
+      Util.sendMessage(event.getChannel(), e.toString());
     }
-
   }
 
   @EventSubscriber public void onReady(ReadyEvent event) {
-    DataManager.init();
+
   }
 
   @EventSubscriber public void onGuildCreate(GuildCreateEvent event) {
