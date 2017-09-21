@@ -3,6 +3,7 @@ package main;
 import commands.ChatCommands;
 import commands.memes.MemeCL;
 import commands.moderation.ModerationCL;
+import db.DataManager;
 import sx.blah.discord.api.IDiscordClient;
 
 import java.io.IOException;
@@ -39,6 +40,7 @@ public class MainBot {
     ChatCommands.init();
     MemeCL.init();
     ModerationCL.init();
+    DataManager.init();
     cli.login();
 
     //    cli.changePlayingText("my own creation");

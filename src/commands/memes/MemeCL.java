@@ -18,11 +18,13 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 
 import commands.ChatCommands;
+import commands.moderation.Setting;
 import commands.moderation.Warning;
 import dataStore.DataStore;
 import db.DataManager;
 import main.MainBot;
 import main.Util;
+import org.json.simple.JSONObject;
 import sx.blah.discord.handle.obj.IEmbed;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.DiscordException;
@@ -52,19 +54,19 @@ public class MemeCL {
       }
 
 //      Long crt = Long.parseLong(meme.getFormattedContent().split("\n")[1]);
-      Long crt = Long.parseLong(meme.text.substring(0, 18));
+//      Long crt = Long.parseLong(meme.text.substring(0, 18));
 //      Long guild = Long.parseLong(meme.getFormattedContent().split("\n")[0]);
-      String msg = meme.text.substring(38);
+//      String msg = meme.text.substring(38);
 //      Long guild = Long.parseLong(meme.getFormattedContent().substring(19, 37));
       String tabs;
       tabs = "\n";
-      for (int x = 0; x < msg.length() * 2; x++) {
+      for (int x = 0; x < meme.text.length() * 2; x++) {
         tabs += " ";
       }
 //      msg = "\"" + msg + "\" " + tabs + " *-" + MainBot.cli.getUserByID(crt).getName() + "*";
       EmbedBuilder builder = new EmbedBuilder();
-      builder.withThumbnail(event.getGuild().getUserByID(crt).getAvatarURL());
-      builder.appendField("\"" + msg + "\" ", " *-" + MainBot.cli.getUserByID(crt).getName() + "*", false );
+      builder.withThumbnail(event.getGuild().getUserByID(meme.user).getAvatarURL());
+      builder.appendField("\"" + meme.text + "\" ", " *-" + MainBot.cli.getUserByID(meme.user).getName() + "*", false );
       builder.withColor(new Color(112, 137, 255));
 //      Util.sendMessage(event.getChannel(), msg);
       RequestBuffer.request(() -> {
@@ -141,7 +143,7 @@ public class MemeCL {
     });
 
     ChatCommands.commandMap.put("maymay", (event, args) -> {
-      Util.sendMessage(event.getChannel(), "maymaysss");
+      Util.sendMessage(event.getChannel(), "maymaysss #ripmira #neverforgetti");
     });
   }
 
