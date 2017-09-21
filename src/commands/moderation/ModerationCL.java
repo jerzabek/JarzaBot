@@ -30,9 +30,14 @@ public class ModerationCL {
     });
 
     ChatCommands.commandMap.put("warn", (event, args) -> {
-      if (DataManager.getWarnrole(event.getGuild().getLongID()) > -1) {
-        if (!event.getAuthor().getRolesForGuild(event.getGuild())
-            .contains(event.getGuild().getRoleByID(DataManager.getWarnrole(event.getGuild().getLongID())))) {
+      if (DataManager.getWarnrole(event.getGuild().getLongID()).size() == 1 && DataManager.getWarnrole(event.getGuild().getLongID()).get(0) > -1) {
+        boolean cont = false;
+        for(Long a : DataManager.getWarnrole(event.getGuild().getLongID())){
+          if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))){
+            cont = true;
+          }
+        }
+        if (!cont) {
           Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
           return;
         }
@@ -59,7 +64,7 @@ public class ModerationCL {
           text += a + t;
         }
       }
-      // System.out.println("id: " + id + " res: " + text);
+//       System.out.println("id: " + id + " res: " + text);
       Moderation.warn(id, text, event);
     });
 
