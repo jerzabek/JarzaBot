@@ -8,9 +8,9 @@ public class Meme {
   public Long user;
   public Long guild;
   public String timestamp;
-  public String[] attachments;
+  public Object[] attachments;
 
-  public Meme(String text, Long user, Long guild, String timestamp, String... attachments) {
+  public Meme(String text, Long user, Long guild, String timestamp, Object... attachments) {
     this.text = text;
     this.user = user;
     this.guild = guild;

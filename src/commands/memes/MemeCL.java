@@ -1,35 +1,21 @@
 package commands.memes;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
+import commands.ChatCommands;
+import db.DataManager;
+import main.MainBot;
+import main.Util;
+import sx.blah.discord.util.DiscordException;
+import sx.blah.discord.util.EmbedBuilder;
+import sx.blah.discord.util.RequestBuffer;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Random;
-
-import javax.imageio.ImageIO;
-
-import commands.ChatCommands;
-import commands.moderation.Setting;
-import commands.moderation.Warning;
-import dataStore.DataStore;
-import db.DataManager;
-import main.MainBot;
-import main.Util;
-import org.json.simple.JSONObject;
-import sx.blah.discord.handle.obj.IEmbed;
-import sx.blah.discord.handle.obj.IMessage;
-import sx.blah.discord.util.DiscordException;
-import sx.blah.discord.util.EmbedBuilder;
-import sx.blah.discord.util.RequestBuffer;
 
 public class MemeCL {
 
@@ -38,7 +24,7 @@ public class MemeCL {
   public static void init() {
 
     ChatCommands.commandMap.put("meme", (event, args) -> {
-      Meme meme = DataManager.getMeme(event.getGuild().getLongID());
+      Meme meme;
       if (args.size() > 0) {
         String name = "";
         int c = 0;
@@ -51,6 +37,9 @@ public class MemeCL {
           }
         }
         meme = DataManager.getMemes(MainBot.cli.getUsersByName(name, true).get(0).getLongID(), event.getGuild().getLongID());
+      }else{
+        meme = DataManager.getMeme(event.getGuild().getLongID());
+//        System.out.println("meme only");
       }
 
 //      Long crt = Long.parseLong(meme.getFormattedContent().split("\n")[1]);
@@ -65,8 +54,21 @@ public class MemeCL {
       }
 //      msg = "\"" + msg + "\" " + tabs + " *-" + MainBot.cli.getUserByID(crt).getName() + "*";
       EmbedBuilder builder = new EmbedBuilder();
-      builder.withThumbnail(event.getGuild().getUserByID(meme.user).getAvatarURL());
-      builder.appendField("\"" + meme.text + "\" ", " *-" + MainBot.cli.getUserByID(meme.user).getName() + "*", false );
+      String username = "1337", memetext = "not available /shrug", timestamp = "n/a", avtrURL = "https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.6/assets/png/1f914.png";
+//      System.out.println(meme.user);
+      if(meme.user != -1L) {
+        username = event.getGuild().getUserByID(meme.user).getName();
+        memetext = meme.text;
+        timestamp = meme.timestamp;
+        avtrURL = event.getGuild().getUserByID(meme.user).getAvatarURL();
+//        System.out.println("beb");
+      }else{
+//        System.out.println("stuff");
+      }
+
+      builder.withThumbnail(avtrURL);
+      builder.appendField("\"" + memetext + "\" ", " *-" + username + "*", false );
+      builder.withFooterText(timestamp);
       builder.withColor(new Color(112, 137, 255));
 //      Util.sendMessage(event.getChannel(), msg);
       RequestBuffer.request(() -> {

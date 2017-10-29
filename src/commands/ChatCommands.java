@@ -1,23 +1,17 @@
 package commands;
 
-import java.awt.Color;
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import commands.moderation.Permission;
-import dataStore.DataStore;
 import db.DataManager;
 import main.MainBot;
 import main.Util;
-import org.slf4j.Logger;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.util.EmbedBuilder;
-import sx.blah.discord.util.Image;
 import sx.blah.discord.util.RequestBuffer;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
+import java.awt.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ChatCommands {
 

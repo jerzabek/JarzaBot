@@ -1,26 +1,10 @@
 package main;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Random;
-
-import javax.imageio.ImageIO;
-
 import commands.ChatCommands;
 import commands.memes.Meme;
 import commands.moderation.Moderation;
-import dataStore.DataStore;
 import db.DataManager;
+import exceptions.InvalidMemeException;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.impl.events.guild.GuildCreateEvent;
@@ -28,15 +12,18 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessagePinEvent;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.impl.events.shard.DisconnectedEvent;
 import sx.blah.discord.handle.obj.IMessage;
-import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.EmbedBuilder;
 import sx.blah.discord.util.RequestBuffer;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
+
 public class ChatEvents {
 
   @EventSubscriber public void onMessageReceived(MessageReceivedEvent event) {
-    if (event.getAuthor().isBot ())
+    if (event.getAuthor().isBot())
       return;
     if(!MainBot.cli.isReady())
       return;
@@ -81,17 +68,21 @@ public class ChatEvents {
     //      }
     //    }
 
-    if (in <= 8) {
+    if (in <= 9) {
       if (!Util.botCommand(event.getMessage().getContent()) && event.getMessage().getFormattedContent().length() > 0) {
         //event.getAuthor().getLongID(), event.getGuild().getLongID(), event.getMessage().getFormattedContent()
         String[] atts = new String[event.getMessage().getAttachments().size()];
         for(int i = 0; i <  event.getMessage().getAttachments().size(); i++){
           atts[i] =  event.getMessage().getAttachments().get(i).getUrl();
         }
-        DataManager.saveMeme(new Meme(event.getMessage().getFormattedContent(),event.getAuthor().getLongID(), event.getGuild().getLongID(), Util.toTimeStamp(event.getMessage().getTimestamp()), atts));
+        try {
+          DataManager.saveMeme(new Meme(event.getMessage().getFormattedContent(),event.getAuthor().getLongID(), event.getGuild().getLongID(), Util.toTimeStamp(event.getMessage().getTimestamp()), atts));
+        } catch (InvalidMemeException e) {
+          e.printStackTrace();
+        }
       }
     }
-    if (!event.getMessage().getContent().startsWith(Util.prefix))
+    if (!event.getMessage().getContent().startsWith(Util.prefix) || event.getMessage().getContent().startsWith(Util.godprefix))
       return;
 
     String[] msg = event.getMessage().getContent().split(" ");
@@ -105,14 +96,14 @@ public class ChatEvents {
     if (msg.length == 0)
       return;
     try {
-      //    if (ChatCommands.commandMap.containsKey(command) && Moderation.hasPermission(command, event.getAuthor(), event.getGuild().getLongID(), event.getChannel().getLongID())) {
-      if (!Util.gmode) {
-        ChatCommands.commandMap.get(command).run(event, args);
-      } else if (event.getAuthor().getLongID() == Util.jarza) {
-        ChatCommands.commandMap.get(command).run(event, args);
+      if (ChatCommands.commandMap.containsKey(command) && (Moderation.hasPermission(command, event.getAuthor(), event.getGuild().getLongID(), event.getChannel().getLongID()))) {
+        if (!Util.gmode) {
+          ChatCommands.commandMap.get(command).run(event, args);
+        } else if (event.getAuthor().getLongID() == Util.jarza) {
+          ChatCommands.commandMap.get(command).run(event, args);
+        }
+        Util.totcom++;
       }
-      Util.totcom++;
-      //    }
     }catch (Throwable e){
       e.printStackTrace();
       Util.sendMessage(event.getChannel(), e.toString());

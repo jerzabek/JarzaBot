@@ -4,7 +4,6 @@ import commands.moderation.Permission;
 import commands.moderation.Warning;
 import main.MainBot;
 import main.Util;
-import sun.text.resources.ar.JavaTimeSupplementary_ar;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.DiscordException;
@@ -313,7 +312,7 @@ public class DataStore {
     }
     if(gperms == null){
       String msg;
-      msg = guild + "\n" + "default-0-0-0-0" + "\n" + Permission.toString(p);
+      msg = guild + "\n" + "default-0-0-0" + "\n" + Permission.toString(p);
       final IMessage[] ms = new IMessage[1];
       RequestBuffer.request(() -> ms[0] = cp.sendMessage(msg));
       gperms = ms[0];

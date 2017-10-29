@@ -2,5 +2,6 @@
 config.dat
 bin/
 .idea/
+classes/
 JarzaBot.iml
 *.json

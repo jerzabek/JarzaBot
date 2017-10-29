@@ -1,17 +1,15 @@
 package database;
 
+import commands.moderation.Setting;
+import main.Util;
+import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-
-import commands.memes.Meme;
-import commands.moderation.Setting;
-import commands.moderation.Warning;
-import main.Util;
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 
 @Deprecated
 public class Database {

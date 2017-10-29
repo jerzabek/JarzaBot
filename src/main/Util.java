@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 public class Util {
 
-  public static String prefix = "j.";
+  public static String prefix = "j.", godprefix = "sudo.";
   public static double version = 0.15;
   private static int cnum = 10;
   public static String[][] cmdinfo = new String[cnum][2];

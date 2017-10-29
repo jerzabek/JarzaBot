@@ -10,7 +10,6 @@ import main.Util;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.omg.CORBA.DynAnyPackage.Invalid;
 import sx.blah.discord.handle.obj.IChannel;
 
 import java.io.FileReader;
@@ -55,12 +54,12 @@ public class DataManager {
       JSONObject sets = new JSONObject();
       sets.put(Setting.KICKP, -1);
       sets.put(Setting.BANP, -1);
-      sets.put(Setting.WARNR, -1);
-      sets.put(Setting.MODR, -1);
+      sets.put(Setting.WARNR, new JSONArray());
+      sets.put(Setting.MODR,  new JSONArray());
       sets.put(Setting.PINCHAN, -1);
 
       JSONArray newperms = new JSONArray();
-      newperms.add("default;false;0;0;0");
+//      newperms.add("default;allow;0;0;0");
 
       newSettingsObj.put(Setting.SETTINGSF, sets);
       newSettingsObj.put(Setting.PERMSF, newperms);
@@ -91,8 +90,8 @@ public class DataManager {
       obj.put(Meme.TIMESTAMPF, maymay.timestamp);
       att = new JSONArray();
       if (maymay.attachments.length > 0) {
-        for (String a : maymay.attachments) {
-          att.add(att.size(), a);
+        for (Object a : maymay.attachments) {
+          att.add(att.size(), a.toString());
         }
       }
     }catch(NullPointerException e){
@@ -113,15 +112,24 @@ public class DataManager {
 
     ArrayList<JSONObject> l = new ArrayList<>();
     for (Object a : memes) {
-      if (((JSONObject) a).get(Meme.GUILDF).equals(guildid.toString())) {
+//      System.out.println(a.toString());
+      if (((JSONObject) a).get(Meme.GUILDF).equals(guildid)) {
+//        System.out.println("found shit");
         l.add((JSONObject) a);
       }
     }
+    JSONObject memeobj;
 
-    JSONObject memeobj = l.get(new Random().nextInt(l.size()));
-    String[] atts = {};
+    if(!l.isEmpty()) {
+//      System.out.println("only meme random chose");
+      memeobj = l.get(new Random().nextInt(l.size()));
+    }else {
+//      System.out.println("no meme found");
+      return new Meme("No maymays found /shrug", -1L, 0L, "");
+    }
+    Object[] atts = {};
     if (!((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).isEmpty()) {
-      atts = (String[]) ((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).toArray();
+      atts = ((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).toArray();
     }
     fin = new Meme((String) memeobj.get(Meme.TEXTF), (Long) memeobj.get(Meme.USERF), (Long) memeobj.get(Meme.GUILDF), (String) memeobj.get(Meme.TIMESTAMPF), atts);
 
@@ -143,12 +151,22 @@ public class DataManager {
         l.add((JSONObject) a);
       }
     }
-    JSONObject memeobj = l.get(new Random().nextInt(l.size()));
-    String[] atts = {};
+    JSONObject memeobj;
+    if(!l.isEmpty())
+      memeobj = l.get(new Random().nextInt(l.size()));
+    else
+      return new Meme("No maymays found /shrug", 0L, 0L, "");
+
+//    System.out.println(memeobj.get(Meme.TEXTF));
+    JSONArray atts = null;
+    Object[] setts = null;
     if (!((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).isEmpty()) {
-      atts = (String[]) ((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).toArray();
+      atts = ((JSONArray) memeobj.get(Meme.ATTACHMENTSF));
+      setts = atts.toArray();
     }
-    fin = new Meme((String) memeobj.get(Meme.TEXTF), (Long) memeobj.get(Meme.USERF), (Long) memeobj.get(Meme.GUILDF), (String) memeobj.get(Meme.TIMESTAMPF), atts);
+
+
+    fin = new Meme((String) memeobj.get(Meme.TEXTF), (Long) memeobj.get(Meme.USERF), (Long) memeobj.get(Meme.GUILDF), (String) memeobj.get(Meme.TIMESTAMPF), (String[]) setts);
 
     return fin;
   }
@@ -159,17 +177,16 @@ public class DataManager {
    * @return the number of warnings as an int
    */
   public static int getKickp(Long guildid) {
-    Long p;
+    Number p;
     if(!settings.containsKey(guildid.toString())) {
       settings.put(guildid.toString(), newSettingsObj);
     }
 
     JSONObject olds = ((JSONObject) settings.get(guildid.toString()));
     JSONObject mod = ((JSONObject) olds.get(Setting.SETTINGSF));
-
-    p = (Long) (mod.get(Setting.KICKP));
-
-    return Math.round(p);
+    p = (Number) (mod.get(Setting.KICKP));
+    Integer.parseInt(String.valueOf(p));
+    return Integer.parseInt(String.valueOf(p));
   }
 
   /**
@@ -194,12 +211,13 @@ public class DataManager {
    * @return the number of warnings
    */
   public static int getBanp(Long guildid) {
-    Long p;
+    Number p;
     if(!settings.containsKey(guildid.toString())) {
       settings.put(guildid.toString(), newSettingsObj);
     }
-    p = (Long)  ((JSONObject) ((JSONObject) settings.get(guildid.toString())).get(Setting.SETTINGSF)).get(Setting.BANP);
-    return Math.round(p);
+    p = (Number)  ((JSONObject) ((JSONObject) settings.get(guildid.toString())).get(Setting.SETTINGSF)).get(Setting.BANP);
+    Integer.parseInt(String.valueOf(p));
+    return Integer.parseInt(String.valueOf(p));
   }
 
   /**
@@ -231,7 +249,11 @@ public class DataManager {
     JSONArray l = (JSONArray) ((JSONObject) ((JSONObject) settings.get(guildid.toString())).get(Setting.SETTINGSF)).get(Setting.MODR);
     for(Object a : l){
       p.add((Long) a);
+//      System.out.println(a);
+//      System.out.println((Long) a + " dis thing");
     }
+//    System.out.println(l);
+//    p.add(l);
     return p;
   }
 
@@ -243,7 +265,9 @@ public class DataManager {
   public static void setModrole(Long guildid, Long id) {
     JSONObject olds = ((JSONObject) settings.get(guildid.toString()));
     JSONObject mod = ((JSONObject) olds.get(Setting.SETTINGSF));
-    mod.put(Setting.MODR, id);
+    JSONArray nnew = (JSONArray) mod.get(Setting.MODR);
+    nnew.add(id);
+    mod.put(Setting.MODR, nnew);
     olds.put(Setting.SETTINGSF, mod);
     settings.put(guildid + "", olds);
   }
@@ -262,7 +286,6 @@ public class DataManager {
     for(Object a : l){
       p.add((Long) a);
     }
-
     return p;
   }
 
@@ -277,7 +300,9 @@ public class DataManager {
     }
     JSONObject olds = ((JSONObject) settings.get(guildid.toString()));
     JSONObject mod = ((JSONObject) olds.get(Setting.SETTINGSF));
-    mod.put(Setting.WARNR, id);
+    JSONArray nnew = (JSONArray) mod.get(Setting.WARNR);
+    nnew.add(id);
+    mod.put(Setting.WARNR, nnew);
     olds.put(Setting.SETTINGSF, mod);
     settings.put(guildid + "", olds);
   }
@@ -409,7 +434,7 @@ public class DataManager {
       settings.put(guildid.toString(), newSettingsObj);
     }
 
-    JSONObject sets4g = ((JSONObject) settings.get(guildid));
+    JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
     JSONArray perms = (JSONArray) sets4g.get(Setting.PERMSF);
     for (Object a : perms) {
       List<String> temp = new ArrayList<>();
@@ -428,15 +453,17 @@ public class DataManager {
    */
   public static void setPermission(Permission p, Long guildid) {
     String perm = "";
-    perm += p.command + ";" + p.value + ";" + p.user + ";" + p.channel + ";" + p.role;
+    perm += p.command + ";" + (p.value ? "allow" : "deny") + ";" + p.role + ";" + p.channel;
     if(!settings.containsKey(guildid.toString())){
       settings.put(guildid.toString(), newSettingsObj);
     }
-    JSONObject sets4g = ((JSONObject) settings.get(guildid));
+    JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
     JSONArray perms = (JSONArray) sets4g.get(Setting.PERMSF);
-    perms.add(perm);
+//    if(!perms.contains(perm))
+      perms.add(perm);
+
     sets4g.put(Setting.PERMSF, perms);
-    settings.put(guildid + "", perms);
+    settings.put(guildid + "", sets4g);
   }
 
   /**
