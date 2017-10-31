@@ -1,11 +1,13 @@
 package db;
 
+import commands.ChatCommands;
 import commands.memes.Meme;
 import commands.moderation.Permission;
 import commands.moderation.Setting;
 import commands.moderation.Warning;
 import exceptions.InvalidMemeException;
 import exceptions.InvalidWarningException;
+import main.MainBot;
 import main.Util;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -266,6 +268,12 @@ public class DataManager {
     JSONObject olds = ((JSONObject) settings.get(guildid.toString()));
     JSONObject mod = ((JSONObject) olds.get(Setting.SETTINGSF));
     JSONArray nnew = (JSONArray) mod.get(Setting.MODR);
+
+    if(mod.containsValue(id))
+      nnew.remove(id);
+    else
+      nnew.add(id);
+
     nnew.add(id);
     mod.put(Setting.MODR, nnew);
     olds.put(Setting.SETTINGSF, mod);
@@ -298,10 +306,15 @@ public class DataManager {
     if(!settings.containsKey(guildid.toString())){
       settings.put(guildid.toString(), newSettingsObj);
     }
+
     JSONObject olds = ((JSONObject) settings.get(guildid.toString()));
     JSONObject mod = ((JSONObject) olds.get(Setting.SETTINGSF));
     JSONArray nnew = (JSONArray) mod.get(Setting.WARNR);
-    nnew.add(id);
+    if(mod.containsValue(id))
+      nnew.remove(id);
+    else
+      nnew.add(id);
+
     mod.put(Setting.WARNR, nnew);
     olds.put(Setting.SETTINGSF, mod);
     settings.put(guildid + "", olds);
@@ -452,18 +465,43 @@ public class DataManager {
    * @param guildid guild id
    */
   public static void setPermission(Permission p, Long guildid) {
+    if(getPerms(guildid).size() >= 25)
+      return;
+    if(!ChatCommands.commandMap.keySet().contains(p.command))
+      return;
+
     String perm = "";
+    System.out.println(p.role + "< someone added dis");
     perm += p.command + ";" + (p.value ? "allow" : "deny") + ";" + p.role + ";" + p.channel;
     if(!settings.containsKey(guildid.toString())){
       settings.put(guildid.toString(), newSettingsObj);
     }
     JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
     JSONArray perms = (JSONArray) sets4g.get(Setting.PERMSF);
-//    if(!perms.contains(perm))
+    if(!perms.contains(perm))
       perms.add(perm);
 
     sets4g.put(Setting.PERMSF, perms);
     settings.put(guildid + "", sets4g);
+  }
+
+  public static void setPermissions(List<Permission> p, Long guildid) {
+    if(getPerms(guildid).size() >= 25)
+      return;
+    JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
+    JSONArray perms = new JSONArray();
+    for(Permission tp : p) {
+      String perm = "";
+      perm += tp.command + ";" + (tp.value ? "allow" : "deny") + ";" + tp.role + ";" + tp.channel;
+      if (!settings.containsKey(guildid.toString())) {
+        settings.put(guildid.toString(), newSettingsObj);
+      }
+      if (!perms.contains(perm))
+        perms.add(perm);
+    }
+    sets4g.put(Setting.PERMSF, perms);
+    settings.put(guildid + "", sets4g);
+
   }
 
   /**
@@ -518,6 +556,12 @@ public class DataManager {
         fw.close();
         fw = new FileWriter(WARNS);
         fw.write(warns.toJSONString());
+//        fw.flush();
+//        fw.close();
+//        fw = new FileWriter("config.json");
+//        JSONObject temp = (JSONObject) new JSONParser().parse(new FileReader("config.json"));
+//        temp.put("cmds", Integer.parseInt((String)temp.get("cmds")) + Util.totcom);
+//        fw.write(temp.toJSONString());
       } catch (Throwable e) {
         e.printStackTrace();
       } finally {

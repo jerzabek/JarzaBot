@@ -1,5 +1,6 @@
 package main;
 
+import commands.ChatCommand;
 import commands.ChatCommands;
 import commands.memes.Meme;
 import commands.moderation.Moderation;
@@ -29,44 +30,6 @@ public class ChatEvents {
       return;
 
     int in = new Random().nextInt(100);
-    // if (!MemeCL.memes.containsKey(event.getAuthor().getLongID())) {
-    // List<String> ini = new ArrayList<>();
-    // MemeCL.memes.put(event.getAuthor().getLongID(), ini);
-    // System.out.println("Initialized meme DB for user " + event.getAuthor().getName() + " ("
-    // + event.getAuthor().getStringID() + ")");
-    // if (in >= 3) {
-    // if (!Util.botCommand(event.getMessage().getContent())) {
-    // // RequestBuffer.request(() -> event.getChannel().sendMessage("Added ***" +
-    // // event.getMessage().getContent() + "*** to ***" + event.getAuthor().getName() +
-    // // "***."));
-    // System.out.println("Saved '" + event.getMessage().getContent() + "' for "
-    // + event.getAuthor().getName() + " (" + event.getAuthor().getStringID() + ")");
-    // MemeCL.memes.get(event.getAuthor().getLongID())
-    // .add(event.getMessage().getContent());
-    // }
-    // }
-    // }
-    // List<Object> memes = Database.getData(Table.memes, event);
-
-    //    if (in > 11) {
-    //      if (!Util.botCommand(event.getMessage().getContent())) {
-    //        // RequestBuffer.request(() -> event.getChannel().sendMessage("Added ***" +
-    //        // event.getMessage().getContent() + "*** to ***" + event.getAuthor().getName() + "***."));
-    //        System.out.println("Saved '" + event.getMessage().getContent() + "' for "
-    //            + event.getAuthor().getName() + " (" + event.getAuthor().getStringID() + ")");
-    //
-    //
-    //        // MemeCL.memes.get(event.getAuthor().getLongID()).add(event.getMessage().getContent());
-    ////        System.out.println("insert into memes (guild, user, text) values ("
-    ////            + event.getGuild().getLongID() + ", " + event.getAuthor().getLongID() + ", "
-    ////            + event.getMessage().getFormattedContent() + ")");
-    //
-    //
-    ////        Database.putData("insert into memes (guild, user, text) values ("
-    ////            + event.getGuild().getLongID() + ", " + event.getAuthor().getLongID() + ", q'["
-    ////            + event.getMessage().getFormattedContent() + "]');", event);
-    //      }
-    //    }
 
     if (in <= 9) {
       if (!Util.botCommand(event.getMessage().getContent()) && event.getMessage().getFormattedContent().length() > 0) {
@@ -82,7 +45,7 @@ public class ChatEvents {
         }
       }
     }
-    if (!event.getMessage().getContent().startsWith(Util.prefix) || event.getMessage().getContent().startsWith(Util.godprefix))
+    if (!event.getMessage().getContent().startsWith(Util.prefix))
       return;
 
     String[] msg = event.getMessage().getContent().split(" ");
@@ -103,6 +66,11 @@ public class ChatEvents {
           ChatCommands.commandMap.get(command).run(event, args);
         }
         Util.totcom++;
+      }else if(ChatCommands.adminMap.containsKey(command)){
+        if (event.getAuthor().getLongID() == Util.jarza) {
+          ChatCommands.adminMap.get(command).run(event, args);
+          Util.totcom++;
+        }
       }
     }catch (Throwable e){
       e.printStackTrace();
@@ -119,6 +87,7 @@ public class ChatEvents {
   }
 
   @EventSubscriber public void onLeave(DisconnectedEvent event) {
+
     System.out.println("offline :<");
   }
 
@@ -127,14 +96,8 @@ public class ChatEvents {
       return;
     if(!DataManager.getPinbu(event.getGuild().getLongID()).equals(0)) {
       IMessage last = event.getChannel().getPinnedMessages().get(event.getChannel().getPinnedMessages().size() - 1);
-      if (event.getChannel().getPinnedMessages().size() >= 45) {
-        if (Util.gmode) {
-          if (event.getGuild().getLongID() == Util.testserver) {
-            pinClear(last, event);
-          }
-        } else {
-          pinClear(last, event);
-        }
+      if (event.getChannel().getPinnedMessages().size() >= 40) {
+        pinClear(last, event);
       }
     }
   }

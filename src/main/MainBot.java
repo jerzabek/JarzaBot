@@ -4,13 +4,13 @@ import commands.ChatCommands;
 import commands.memes.MemeCL;
 import commands.moderation.ModerationCL;
 import db.DataManager;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import sx.blah.discord.api.IDiscordClient;
 
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainBot {
   public static IDiscordClient cli;
@@ -21,15 +21,16 @@ public class MainBot {
     // System.out.println("Pls token: java -jar thisjar.jar tokenhere");
     // return;
     // }
-    List<String> data = new ArrayList<>();
+    JSONObject config = new JSONObject();
     try {
-      data = Files.readAllLines(Paths.get("config.dat"));
+      config = (JSONObject) (new JSONParser().parse(new FileReader("config.json")));
     } catch (IOException e) {
       e.printStackTrace();
+    } catch (ParseException e) {
+      e.printStackTrace();
     }
-    Util.jarza = Long.parseLong(data.get(1));
-    Util.testserver = Long.parseLong(data.get(2));
-    String token = data.get(0);
+    Util.jarza = Long.parseLong((String) config.get("owner"));
+    String token = (String) config.get("key");
 
     cli = Util.getBuiltDiscordClient(token); // args[0]
 

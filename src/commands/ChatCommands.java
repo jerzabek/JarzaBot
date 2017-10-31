@@ -16,20 +16,32 @@ import java.util.Map;
 public class ChatCommands {
 
   public static Map<String, ChatCommand> commandMap = new HashMap<>();
+  public static Map<String, ChatCommand> adminMap = new HashMap<>();
 
   public static void init() {
     ChatCommands.commandMap.put("rule", (event, args) -> {
-      //j.rule deny say everyone general
-      //j.rule allow say staff general
-      //j.rule meme deny everyone
-      //j.rule meme allow everyone botcommands
-      //j.rule satansbae deny jarza bot
-      //[deny or allow] [command name] (user default: everyone) (channel default: all) (role default: everyone)
-//      DataStore.setPermission(Permission.commandParse(args, event.getGuild().getLongID()), event.getGuild().getLongID());
+      //j.rule say deny general jarza
+      // OR
+      //j.rule say deny jarza genearl
+      boolean cont = false;
+      for(Long a : DataManager.getModrole(event.getGuild().getLongID())){
+        if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))){
+          cont = true;
+        }
+      }
+      if (!cont) {
+        Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
+        return;
+      }
+      if(DataManager.getPerms(event.getGuild().getLongID()).size() >= 25) {
+        Util.sendMessage(event.getChannel(), "Error: you can only have up to 25 permissions.");
+        return;
+      }
+
       DataManager.setPermission(Permission.commandParse(args, event.getGuild().getLongID()), event.getGuild().getLongID());
     });
 
-    ChatCommands.commandMap.put("logoff", (event, args) -> {
+    ChatCommands.adminMap.put("logoff", (event, args) -> {
       if (event.getAuthor().getLongID() == Util.jarza) {
         Util.sendMessage(event.getChannel(), "Turning off...");
         RequestBuffer.request(() -> MainBot.cli.logout());
@@ -38,7 +50,7 @@ public class ChatCommands {
       }
     });
 
-    ChatCommands.commandMap.put("godmode", (event, args) -> {
+    ChatCommands.adminMap.put("godmode", (event, args) -> {
       if (event.getAuthor().getLongID() == Util.jarza) {
         Util.gmode = !Util.gmode;
         if (Util.gmode) {
@@ -53,7 +65,7 @@ public class ChatCommands {
       Util.sendMessage(event.getChannel(), "Invite link for Jarzu botto: " + Util.link);
     });
 
-    ChatCommands.commandMap.put("game", (MessageReceivedEvent event, List<String> args) -> {
+    ChatCommands.adminMap.put("game", (MessageReceivedEvent event, List<String> args) -> {
       if (event.getAuthor().getLongID() == Util.jarza) {
         if (args.size() != 0) {
           String text = "";
@@ -78,7 +90,7 @@ public class ChatCommands {
       builder.withColor(new Color(112, 137, 255));
       builder.withAuthorIcon(event.getAuthor().getAvatarURL());
       builder.withFooterText("Still under development! uwu");
-      builder.withThumbnail(MainBot.cli.getApplicationIconURL());
+      builder.withThumbnail(MainBot.cli.getOurUser().getAvatarURL());
 
       RequestBuffer.request(() -> event.getChannel().sendMessage(builder.build()));
     });
@@ -86,18 +98,46 @@ public class ChatCommands {
     commandMap.put("help", (event, args) -> {
       EmbedBuilder builder = new EmbedBuilder();
 
-      builder.appendField("Prefix: " + Util.prefix, String.format("Version %1$s", Util.version),
+      if(args.isEmpty()){
+        builder.appendField("Prefix: " + Util.prefix, String.format("Version %1$s", Util.version),
           true);
-      builder.withAuthorName("Jarza Bot Manual!");
-      builder.withAuthorIcon(event.getAuthor().getAvatarURL());
-      builder.withFooterText("Still under development! uwu");
-      builder.withColor(new Color(112, 137, 255));
-      for (int x = Util.cmdinfo.length; x > 0; x--) {
-        builder.appendField(Util.cmdinfo[Util.cmdinfo.length - x][0],
-            Util.cmdinfo[Util.cmdinfo.length - x][1], false);
-      }
-      RequestBuffer.request(() -> event.getChannel().sendMessage(builder.build()));
+        builder.withAuthorName("Jarza Bot Manual!");
+        builder.withAuthorIcon(event.getAuthor().getAvatarURL());
+        builder.withFooterText("Still under development! uwu");
+        builder.withColor(new Color(112, 137, 255));
 
+
+        for (String a : Util.catnames) {
+          String comms = "";
+          for(String c : Util.cats.get(a).keySet()) {
+            comms += c + ", ";
+          }
+          builder.appendField(a, comms, false);
+        }
+        RequestBuffer.request(() -> event.getChannel().sendMessage(builder.build()));
+      }else if(args.size() == 1){
+        builder.appendField("Prefix: " + Util.prefix, String.format("Version %1$s", Util.version),
+          true);
+        builder.withAuthorName("Jarza Bot Manual!");
+        builder.withAuthorIcon(event.getAuthor().getAvatarURL());
+        builder.withFooterText("Still under development! uwu");
+        builder.withColor(new Color(112, 137, 255));
+        String cmd = null, info = null;
+        for (String a : Util.catnames) {
+          for(String c : Util.cats.get(a).keySet()) {
+            if(c.equals(args.get(0).toLowerCase())){
+              cmd = c;
+              info = Util.cats.get(a).get(c);
+            }
+          }
+        }
+
+        if(cmd == null)
+          return;
+
+        builder.appendField(cmd, info, false);
+        RequestBuffer.request(() -> event.getChannel().sendMessage(builder.build()));
+      }
     });
 
     ChatCommands.commandMap.put("test", (event, args) -> {

@@ -36,7 +36,23 @@ public class MemeCL {
             name += a + " ";
           }
         }
-        meme = DataManager.getMemes(MainBot.cli.getUsersByName(name, true).get(0).getLongID(), event.getGuild().getLongID());
+        if(!event.getGuild().getUsersByName(name, true).isEmpty())
+         meme = DataManager.getMemes(event.getGuild().getUsersByName(name, true).get(0).getLongID(), event.getGuild().getLongID());
+        else if(!event.getGuild().getUsersByName(name, false).isEmpty()) {
+          meme = DataManager.getMemes(event.getGuild().getUsersByName(name, false).get(0).getLongID(), event.getGuild().getLongID());
+        }else {
+          EmbedBuilder builder = new EmbedBuilder();
+          builder.appendField("No memes available for that user", "¯\\_(ツ)_/¯", false);
+          RequestBuffer.request(() -> {
+            try {
+              event.getChannel().sendMessage(builder.build());
+            } catch (DiscordException e) {
+              System.err.println("Hmmm shit went sideways... Here's why: ");
+              e.printStackTrace();
+            }
+          });
+          return;
+        }
       }else{
         meme = DataManager.getMeme(event.getGuild().getLongID());
 //        System.out.println("meme only");
@@ -49,36 +65,50 @@ public class MemeCL {
 //      Long guild = Long.parseLong(meme.getFormattedContent().substring(19, 37));
       String tabs;
       tabs = "\n";
-      for (int x = 0; x < meme.text.length() * 2; x++) {
-        tabs += " ";
-      }
-//      msg = "\"" + msg + "\" " + tabs + " *-" + MainBot.cli.getUserByID(crt).getName() + "*";
-      EmbedBuilder builder = new EmbedBuilder();
-      String username = "1337", memetext = "not available /shrug", timestamp = "n/a", avtrURL = "https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.6/assets/png/1f914.png";
-//      System.out.println(meme.user);
-      if(meme.user != -1L) {
-        username = event.getGuild().getUserByID(meme.user).getName();
-        memetext = meme.text;
-        timestamp = meme.timestamp;
-        avtrURL = event.getGuild().getUserByID(meme.user).getAvatarURL();
-//        System.out.println("beb");
-      }else{
-//        System.out.println("stuff");
-      }
-
-      builder.withThumbnail(avtrURL);
-      builder.appendField("\"" + memetext + "\" ", " *-" + username + "*", false );
-      builder.withFooterText(timestamp);
-      builder.withColor(new Color(112, 137, 255));
-//      Util.sendMessage(event.getChannel(), msg);
-      RequestBuffer.request(() -> {
-        try {
-          event.getChannel().sendMessage(builder.build());
-        } catch (DiscordException e) {
-          System.err.println("Hmmm shit went sideways... Here's why: ");
-          e.printStackTrace();
+      if(meme != null) {
+        for (int x = 0; x < meme.text.length() * 2; x++) {
+          tabs += " ";
         }
-      });
+        //      msg = "\"" + msg + "\" " + tabs + " *-" + MainBot.cli.getUserByID(crt).getName() + "*";
+        EmbedBuilder builder = new EmbedBuilder();
+        String username = "1337", memetext = "not available /shrug", timestamp = "n/a", avtrURL = "https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.6/assets/png/1f914.png";
+        //      System.out.println(meme.user);
+        if (meme.user != -1L) {
+          username = event.getGuild().getUserByID(meme.user).getName();
+          memetext = meme.text;
+          timestamp = meme.timestamp;
+          avtrURL = event.getGuild().getUserByID(meme.user).getAvatarURL();
+          //        System.out.println("beb");
+        } else {
+          //        System.out.println("stuff");
+        }
+
+        builder.withThumbnail(avtrURL);
+        builder.appendField("\"" + memetext + "\" ", " *-" + username + "*", false);
+        builder.withFooterText(timestamp);
+        builder.withColor(new Color(112, 137, 255));
+        //      Util.sendMessage(event.getChannel(), msg);
+        RequestBuffer.request(() -> {
+          try {
+            event.getChannel().sendMessage(builder.build());
+          } catch (DiscordException e) {
+            System.err.println("Hmmm shit went sideways... Here's why: ");
+            e.printStackTrace();
+          }
+        });
+      }else{
+        EmbedBuilder builder = new EmbedBuilder();
+        builder.appendField("No warnings available",
+          "¯\\_(ツ)_/¯", false);
+        RequestBuffer.request(() -> {
+          try {
+            event.getChannel().sendMessage(builder.build());
+          } catch (DiscordException e) {
+            System.err.println("Hmmm shit went sideways... Here's why: ");
+            e.printStackTrace();
+          }
+        });
+      }
     });
 
     ChatCommands.commandMap.put("dating", (event, args) -> {

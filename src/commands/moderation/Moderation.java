@@ -50,6 +50,16 @@ public class Moderation {
   }
 
   public static void clearWarn(int warnId, Long user, MessageReceivedEvent event) {
+    boolean cont = false;
+    for(Long a : DataManager.getModrole(event.getGuild().getLongID())){
+      if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))){
+        cont = true;
+      }
+    }
+    if (!cont) {
+      Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
+      return;
+    }
     List<Warning> w = (warnId == -1 ?
       DataManager.getWarns(event.getGuild().getLongID()) :
       DataManager.getWarns(event.getGuild().getLongID(), user));
@@ -147,11 +157,6 @@ public class Moderation {
         if(event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(l)))
           authorMod = true;
       }
-
-//      for(IRole a : event.getAuthor().getRolesForGuild(event.getGuild())){
-//        //System.out.println(a.getLongID());
-//      }
-      //System.out.println(DataManager.getModrole(event.getGuild().getLongID()));
     }else{
       Util.sendMessage(event.getChannel(),
           "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
@@ -218,7 +223,7 @@ public class Moderation {
   public static boolean hasPermission(String command, IUser user, Long guildid, Long channelid){
     boolean has = true;
     for(Permission p : DataManager.getPerms(guildid)){
-      if(p.command.equals(command)) {
+      if(p.command.equals(command) || (Util.catnames.contains(p.command) && Util.cats.get(p.command).containsKey(command))) {
         if (p.channel != 0 || p.role != 0){
           if(p.role == 0 || user.getRolesForGuild(MainBot.cli.getGuildByID(guildid)).contains(MainBot.cli.getRoleByID(p.role))){
             if(p.channel == 0 || p.channel.equals(channelid)){

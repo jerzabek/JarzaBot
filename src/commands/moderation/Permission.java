@@ -121,41 +121,51 @@ public class Permission {
     p.value = args.get(1).equals("allow") ? true : false;
     p.guild = guild;
     for (int i = 2; i < args.size(); i++) {
-      if (MainBot.cli.getGuildByID(guild).getChannelsByName(args.get(i)).size() != 0) {
-        p.channel = MainBot.cli.getGuildByID(guild).getChannelsByName(args.get(i)).get(0).getLongID();
-      }
-      if (MainBot.cli.getGuildByID(guild).getRolesByName(args.get(i)).size() != 0) {
-        p.role = MainBot.cli.getGuildByID(guild).getRolesByName(args.get(i)).get(0).getLongID();
-      }
-      try {
-        if (MainBot.cli.getGuildByID(guild).getChannelByID(Long.parseLong(args.get(i))) != null) {
-          p.channel = MainBot.cli.getGuildByID(guild).getChannelByID(Long.parseLong(args.get(i))).getLongID();
+      if(p.channel == 0L)
+        if (MainBot.cli.getGuildByID(guild).getChannelsByName(args.get(i)).size() != 0) {
+          p.channel = MainBot.cli.getGuildByID(guild).getChannelsByName(args.get(i)).get(0).getLongID();
+          System.out.println("kek a");
         }
-      } catch (Throwable e) {}
-
-      try {
-        if (MainBot.cli.getGuildByID(guild).getRoleByID(Long.parseLong(args.get(i))) != null) {
-          p.role = MainBot.cli.getGuildByID(guild).getRoleByID(Long.parseLong(args.get(i))).getLongID();
+      if(p.role == 0L)
+        if (MainBot.cli.getGuildByID(guild).getRolesByName(args.get(i)).size() != 0) {
+          p.role = MainBot.cli.getGuildByID(guild).getRolesByName(args.get(i)).get(0).getLongID();
+          System.out.println("kek s" + p.role);
         }
-      } catch (Throwable e) {}
+      if(p.channel == 0L)
+        try {
+          if (MainBot.cli.getGuildByID(guild).getChannelByID(Long.parseLong(args.get(i))) != null) {
+            p.channel = MainBot.cli.getGuildByID(guild).getChannelByID(Long.parseLong(args.get(i))).getLongID();
+            System.out.println("kek 1");
+          }
+        } catch (Throwable e) {}
 
-      try{
-        String temp = args.get(i).substring(2, args.get(i).length()-1);
-        Long templ = Long.parseLong(temp);
+      if(p.role == 0L)
+        try {
+          if (MainBot.cli.getGuildByID(guild).getRoleByID(Long.parseLong(args.get(i))) != null) {
+            p.role = MainBot.cli.getGuildByID(guild).getRoleByID(Long.parseLong(args.get(i))).getLongID();
+            System.out.println("kek 2" + p.role);
+          }
+        } catch (Throwable e) {}
 
-        if (MainBot.cli.getGuildByID(guild).getChannelByID(templ) != null) {
-          p.channel = MainBot.cli.getGuildByID(guild).getChannelByID(templ).getLongID();
-        }
-      }catch (Throwable e){}
+      if(p.channel == 0L)
+        try{
+          String temp = args.get(i).substring(2, args.get(i).length()-1);
+          Long templ = Long.parseLong(temp);
 
-      try{
-        String temp = args.get(i).substring(3, args.get(i).length()-1);
-        Long templ = Long.parseLong(temp);
+          if (MainBot.cli.getGuildByID(guild).getChannelByID(templ) != null) {
+            p.channel = MainBot.cli.getGuildByID(guild).getChannelByID(templ).getLongID();
+          }
+        }catch (Throwable e){}
 
-        if (MainBot.cli.getGuildByID(guild).getRoleByID(templ) != null) {
-          p.role = MainBot.cli.getGuildByID(guild).getRoleByID(templ).getLongID();
-        }
-      }catch (Throwable e){}
+      if(p.role == 0L)
+        try{
+          String temp = args.get(i).substring(3, args.get(i).length()-1);
+          Long templ = Long.parseLong(temp);
+
+          if (MainBot.cli.getGuildByID(guild).getRoleByID(templ) != null) {
+            p.role = MainBot.cli.getGuildByID(guild).getRoleByID(templ).getLongID();
+          }
+        }catch (Throwable e){}
     }
     return p;
 //    if(MainBot.cli.getGuildByID(guild).getChannelsByName(args.get(2)).size() != 0){

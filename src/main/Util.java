@@ -1,59 +1,56 @@
 package main;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.*;
 
 public class Util {
 
-  public static String prefix = "j.", godprefix = "sudo.";
+  public static String prefix = "j.";
+  public static List<Long> botAdmins;
   public static double version = 0.15;
   private static int cnum = 10;
-  public static String[][] cmdinfo = new String[cnum][2];
+  private static JSONObject commands;
+  public static String COMMANDS = "commands.json";
+  public static List<String> catnames;
+  public static HashMap<String, HashMap<String, String>> cats;
   public static int totcom = 0;
   public static String link =
       "https://discordapp.com/oauth2/authorize?client_id=334665490612092929&scope=bot&permissions=335932502";
   public static boolean gmode = true;
   public static Long jarza = 0l;
-  public static Long testserver = 0l;
 
   public static void init() {
-    cmdinfo[0][0] = "modr roleName";
-    cmdinfo[0][1] = "This will set the bot editing permission role (example: j.modr Staff)";
+    try {
+      commands = (JSONObject) (new JSONParser().parse(new FileReader(COMMANDS)));
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    catnames = new ArrayList<>();
+    cats = new HashMap<>();
+    for(Object a : commands.keySet()){
+      String b = (String) a;
+      JSONObject c = ((JSONObject) commands.get(b));
+      catnames.add(b);
+      HashMap<String, String> t = new HashMap<>();
+      for(Object d : c.keySet()){
+        t.put((String) d, (String) c.get(d));
+      }
+      cats.put(b, t);
+    }
 
-    cmdinfo[1][0] = "warnr roleName";
-    cmdinfo[1][1] = "This will set the warning permission role (ex: j.warnr Staff)";
-
-    cmdinfo[2][0] = "warnp kick/ban numberOfWarnings";
-    cmdinfo[2][1] = "This will set the punishment for a certain ammount of warnings (ex: j.warnp kick 3)";
-
-    cmdinfo[3][0] = "warn @user reason";
-    cmdinfo[3][1] = "For example j.warn @jarza#1289 spams hentai in general chat";
-
-    cmdinfo[4][0] = "warnl [optional @user]";
-    cmdinfo[4][1] = "Lists all warnings for a user if one is specified, otherwise it lists all warnings on the server (ex: j.warnl or j.warnl @jarza#1289)";
-
-    cmdinfo[5][0] = "warnc @user [optional warnId]";
-    cmdinfo[5][1] = "If you specify which warning from the warn list you want, it will be cleared. Otherwise all of that users warnings will be cleared.";
-
-    cmdinfo[6][0] = "meme [optional @user]";
-    cmdinfo[6][1] = "Gets a random meme that the bot has saved.";
-
-    cmdinfo[7][0] = "dating";
-    cmdinfo[7][1] = "Generates a custom dating ad!";
-
-    cmdinfo[8][0] = "say text";
-    cmdinfo[8][1] = "Makes the bot say something and delete your message (ex: j.say hehe i am alive)";
-
-    cmdinfo[9][0] = "rule";
-    cmdinfo[9][1] = "Miscellaneous commands.";
-
-    cmdinfo[9][0] = "info, help, ping, invite";
-    cmdinfo[9][1] = "Miscellaneous commands.";
   }
 
   static IDiscordClient getBuiltDiscordClient(String token) {
