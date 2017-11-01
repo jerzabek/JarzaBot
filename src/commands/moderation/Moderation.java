@@ -60,9 +60,7 @@ public class Moderation {
       Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
       return;
     }
-    List<Warning> w = (warnId == -1 ?
-      DataManager.getWarns(event.getGuild().getLongID()) :
-      DataManager.getWarns(event.getGuild().getLongID(), user));
+    List<Warning> w = DataManager.getWarns(event.getGuild().getLongID(), user);
     if (warnId > -1) {
       if (w.get(warnId) != null) {
         try {
@@ -85,12 +83,24 @@ public class Moderation {
       // Util.sendMessage(event.getChannel(), "**>Error: warning no existo!**");
       // }
     } else if (warnId == -1) {
-      for(Warning wt : w){
-//        DataManager.clearWarns(wt.msgid);
-
+      int cl = 0;
+      for(int i = 0; i < w.size(); i++){
+        try {
+          if(!w.get(i).cleared) {
+            DataManager.clearWarns(event.getGuild().getLongID(), w.get(i).victim, event.getAuthor().getLongID(), i);
+            cl++;
+          }
+        } catch (InvalidWarningException e) {
+          e.printStackTrace();
+        }
       }
-      Util.sendMessage(event.getChannel(), "Removing all warnings is currently disabled :/");
-//      Util.sendMessage(event.getChannel(), "**>Removed all of *" + event.getGuild().getUserByID(user).getName() + "'s* warnings.**");
+//      Util.sendMessage(event.getChannel(), "Removing all warnings is currently disabled :/");
+      if(cl == w.size() && cl != 0)
+        Util.sendMessage(event.getChannel(), "**>Removed all of *" + event.getGuild().getUserByID(user).getName() + "'s* warnings.**");
+      else if(cl == 0)
+        Util.sendMessage(event.getChannel(), "**>All warnings allready cleared.**");
+      else
+        Util.sendMessage(event.getChannel(), "**>Removed " + cl + " warning(s) for *" + event.getGuild().getUserByID(user).getName() + "*.**");
     } else {
       Util.sendMessage(event.getChannel(), "**>Error: bad warning!**");
     }
@@ -164,8 +174,13 @@ public class Moderation {
     }
 
     if (authorMod) {
-      DataManager.setWarnrole(event.getGuild().getLongID(), role.getLongID());
-      Util.sendMessage(event.getChannel(), "**>Set warning role to: *" + role.getName() + "*.**");
+      if(!DataManager.getWarnrole(event.getGuild().getLongID()).contains(role.getLongID())) {
+        DataManager.setWarnrole(event.getGuild().getLongID(), role.getLongID());
+        Util.sendMessage(event.getChannel(), "**>Set warning role to: *" + role.getName() + "*.**");
+      }else{
+        DataManager.removeWarnr(event.getGuild().getLongID(), role.getLongID());
+        Util.sendMessage(event.getChannel(), "**>Removed warning role: *" + role.getName() + "*.**");
+      }
     } else {
       Util.sendMessage(event.getChannel(),
           "**>Error: you dont have permission to edit the bot settings.**");
@@ -176,15 +191,6 @@ public class Moderation {
     boolean authorMod = false;
 
     if(!DataManager.getModrole(event.getGuild().getLongID()).isEmpty()){
-//      for(Long x : DataManager.getModrole(event.getGuild().getLongID())){
-//        for(IRole y : event.getAuthor().getRolesForGuild(event.getGuild())){
-//          if(x.equals(y.getLongID())){
-//            authorMod = true;
-//            break;
-//          }
-//        }
-//      }
-
       for(Long l : DataManager.getModrole(event.getGuild().getLongID())){
         if(event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(l)))
           authorMod = true;
@@ -194,8 +200,13 @@ public class Moderation {
     }
 
     if (authorMod) {
-      DataManager.setModrole(event.getGuild().getLongID(), role.getLongID());
-      Util.sendMessage(event.getChannel(), "**>Set bot moderator role to: *" + role.getName() + "*.**");
+      if(!DataManager.getModrole(event.getGuild().getLongID()).contains(role.getLongID())) {
+        DataManager.setModrole(event.getGuild().getLongID(), role.getLongID());
+        Util.sendMessage(event.getChannel(), "**>Added bot moderator role: *" + role.getName() + "*.**");
+      }else{
+        DataManager.removeModr(event.getGuild().getLongID(), role.getLongID());
+        Util.sendMessage(event.getChannel(), "**>Removed bot moderator role: *" + role.getName() + "*.**");
+      }
     } else {
       Util.sendMessage(event.getChannel(),
           "**>Error: you dont have permission to edit the bot settings.**");

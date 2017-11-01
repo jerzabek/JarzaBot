@@ -4,6 +4,7 @@ import commands.ChatCommands;
 import db.DataManager;
 import main.MainBot;
 import main.Util;
+import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.EmbedBuilder;
 import sx.blah.discord.util.RequestBuffer;
@@ -15,7 +16,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Random;
+import java.util.*;
 
 public class MemeCL {
 
@@ -23,7 +24,7 @@ public class MemeCL {
 
   public static void init() {
 
-    ChatCommands.commandMap.put("meme", (event, args) -> {
+    ChatCommands.commandMap.put("meme", (MessageReceivedEvent event, java.util.List<String> args) -> {
       Meme meme;
       if (args.size() > 0) {
         String name = "";
@@ -71,16 +72,41 @@ public class MemeCL {
         }
         //      msg = "\"" + msg + "\" " + tabs + " *-" + MainBot.cli.getUserByID(crt).getName() + "*";
         EmbedBuilder builder = new EmbedBuilder();
-        String username = "1337", memetext = "not available /shrug", timestamp = "n/a", avtrURL = "https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.6/assets/png/1f914.png";
+        String username, memetext, timestamp, avtrURL;
         //      System.out.println(meme.user);
         if (meme.user != -1L) {
-          username = event.getGuild().getUserByID(meme.user).getName();
-          memetext = meme.text;
-          timestamp = meme.timestamp;
-          avtrURL = event.getGuild().getUserByID(meme.user).getAvatarURL();
+          if(event.getGuild().getUserByID(meme.user) == null) {
+            builder.appendField("No memes available for that user",
+              "¯\\_(ツ)_/¯", false);
+            RequestBuffer.request(() -> {
+              try {
+                event.getChannel().sendMessage(builder.build());
+              } catch (DiscordException e) {
+                System.err.println("Hmmm shit went sideways... Here's why: ");
+                e.printStackTrace();
+              }
+            });
+            return;
+          }else {
+
+            username = event.getGuild().getUserByID(meme.user).getName();
+            memetext = meme.text;
+            timestamp = meme.timestamp;
+            avtrURL = event.getGuild().getUserByID(meme.user).getAvatarURL();
+          }
           //        System.out.println("beb");
-        } else {
-          //        System.out.println("stuff");
+        }else{
+          builder.appendField("No memes available for that user",
+            "¯\\_(ツ)_/¯", false);
+          RequestBuffer.request(() -> {
+            try {
+              event.getChannel().sendMessage(builder.build());
+            } catch (DiscordException e) {
+              System.err.println("Hmmm shit went sideways... Here's why: ");
+              e.printStackTrace();
+            }
+          });
+          return;
         }
 
         builder.withThumbnail(avtrURL);
@@ -98,7 +124,7 @@ public class MemeCL {
         });
       }else{
         EmbedBuilder builder = new EmbedBuilder();
-        builder.appendField("No warnings available",
+        builder.appendField("No memes available",
           "¯\\_(ツ)_/¯", false);
         RequestBuffer.request(() -> {
           try {

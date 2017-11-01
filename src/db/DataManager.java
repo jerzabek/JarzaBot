@@ -1,5 +1,6 @@
 package db;
 
+import commands.ChatCommand;
 import commands.ChatCommands;
 import commands.memes.Meme;
 import commands.moderation.Permission;
@@ -39,7 +40,7 @@ public class DataManager {
   public final static String SETTINGS = "settings.json", MEMES = "memes.json", WARNS = "warnings.json";
   public static JSONObject settings, warns;
   public static JSONArray memes;
-  public static JSONObject newSettingsObj;
+  public static JSONObject newSettingsObj, newWarningObject;
 
   /**
    * Initializes the data arrays and default objects
@@ -65,6 +66,8 @@ public class DataManager {
 
       newSettingsObj.put(Setting.SETTINGSF, sets);
       newSettingsObj.put(Setting.PERMSF, newperms);
+
+      newSettingsObj = new JSONObject();
 
     } catch (Throwable e) {
       e.printStackTrace();
@@ -168,7 +171,7 @@ public class DataManager {
     }
 
 
-    fin = new Meme((String) memeobj.get(Meme.TEXTF), (Long) memeobj.get(Meme.USERF), (Long) memeobj.get(Meme.GUILDF), (String) memeobj.get(Meme.TIMESTAMPF), (String[]) setts);
+    fin = new Meme(memeobj.get(Meme.TEXTF).toString(), (Long) memeobj.get(Meme.USERF), (Long) memeobj.get(Meme.GUILDF), memeobj.get(Meme.TIMESTAMPF).toString(), (String[]) setts);
 
     return fin;
   }
@@ -259,6 +262,17 @@ public class DataManager {
     return p;
   }
 
+  public static void removeModr(Long guildid, Long role) {
+    List<Long> p = new ArrayList<>();
+    if(!settings.containsKey(guildid.toString())) {
+      settings.put(guildid.toString(), newSettingsObj);
+    }
+    JSONArray l = (JSONArray) ((JSONObject) ((JSONObject) settings.get(guildid.toString())).get(Setting.SETTINGSF)).get(Setting.MODR);
+    l.remove(role);
+    l.remove(role.toString());
+    ((JSONObject) ((JSONObject) settings.get(guildid.toString())).get(Setting.SETTINGSF)).put(Setting.MODR, l);
+  }
+
   /**
    * sets a new bot moderator role in a guild
    * @param guildid guild id
@@ -274,7 +288,7 @@ public class DataManager {
     else
       nnew.add(id);
 
-    nnew.add(id);
+//    nnew.add(id);
     mod.put(Setting.MODR, nnew);
     olds.put(Setting.SETTINGSF, mod);
     settings.put(guildid + "", olds);
@@ -320,6 +334,16 @@ public class DataManager {
     settings.put(guildid + "", olds);
   }
 
+  public static void removeWarnr(Long guildid, Long role) {
+    if(!settings.containsKey(guildid.toString())) {
+      settings.put(guildid.toString(), newSettingsObj);
+    }
+    JSONArray l = (JSONArray) ((JSONObject) ((JSONObject) settings.get(guildid.toString())).get(Setting.SETTINGSF)).get(Setting.WARNR);
+    l.remove(role);
+    l.remove(role.toString());
+    ((JSONObject) ((JSONObject) settings.get(guildid.toString())).get(Setting.SETTINGSF)).put(Setting.WARNR, l);
+  }
+
   /**
    * warns a user by a specified warning
    * @param w the warning
@@ -339,7 +363,8 @@ public class DataManager {
 
       if (!warns.containsKey(w.guild.toString())) {
         userw.add(warnin);
-        warns.put(w.guild.toString(), userw);
+        warns.put(w.guild.toString(), new JSONObject());
+        warns.put(w.victim.toString(), userw);
       } else {
         guild = (JSONObject) warns.get(w.guild.toString());
         userw = ((JSONArray) guild.get(w.victim.toString()));
@@ -467,7 +492,8 @@ public class DataManager {
   public static void setPermission(Permission p, Long guildid) {
     if(getPerms(guildid).size() >= 25)
       return;
-    if(!ChatCommands.commandMap.keySet().contains(p.command))
+//    System.out.println(ChatCommands.commandMap.keySet().contains(p.command) );
+    if(!(ChatCommands.commandMap.keySet().contains(p.command) || ChatCommands.adminMap.keySet().contains(p.command) || Util.catnames.contains(p.command)))
       return;
 
     String perm = "";
@@ -490,6 +516,8 @@ public class DataManager {
       return;
     JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
     JSONArray perms = new JSONArray();
+    if(p.isEmpty())
+      return;
     for(Permission tp : p) {
       String perm = "";
       perm += tp.command + ";" + (tp.value ? "allow" : "deny") + ";" + tp.role + ";" + tp.channel;
@@ -516,7 +544,7 @@ public class DataManager {
       settings.put(guildid.toString(), newSettingsObj);
     }
 
-    JSONObject sets4g = ((JSONObject) settings.get(guildid));
+    JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
     JSONObject sets = (JSONObject) sets4g.get(Setting.SETTINGSF);
 
     c = (Long) sets.get(Setting.PINCHAN);
@@ -533,7 +561,7 @@ public class DataManager {
     if(!settings.containsKey(guildid.toString())){
       settings.put(guildid.toString(), newSettingsObj);
     }
-    JSONObject sets4g = ((JSONObject) settings.get(guildid));
+    JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
     JSONObject sets = (JSONObject) sets4g.get(Setting.SETTINGSF);
     sets.put(Setting.PINCHAN, id);
     sets4g.put(Setting.SETTINGSF, sets);

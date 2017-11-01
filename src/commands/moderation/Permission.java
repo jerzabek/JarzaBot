@@ -124,18 +124,15 @@ public class Permission {
       if(p.channel == 0L)
         if (MainBot.cli.getGuildByID(guild).getChannelsByName(args.get(i)).size() != 0) {
           p.channel = MainBot.cli.getGuildByID(guild).getChannelsByName(args.get(i)).get(0).getLongID();
-          System.out.println("kek a");
         }
       if(p.role == 0L)
         if (MainBot.cli.getGuildByID(guild).getRolesByName(args.get(i)).size() != 0) {
           p.role = MainBot.cli.getGuildByID(guild).getRolesByName(args.get(i)).get(0).getLongID();
-          System.out.println("kek s" + p.role);
         }
       if(p.channel == 0L)
         try {
           if (MainBot.cli.getGuildByID(guild).getChannelByID(Long.parseLong(args.get(i))) != null) {
             p.channel = MainBot.cli.getGuildByID(guild).getChannelByID(Long.parseLong(args.get(i))).getLongID();
-            System.out.println("kek 1");
           }
         } catch (Throwable e) {}
 
@@ -143,7 +140,6 @@ public class Permission {
         try {
           if (MainBot.cli.getGuildByID(guild).getRoleByID(Long.parseLong(args.get(i))) != null) {
             p.role = MainBot.cli.getGuildByID(guild).getRoleByID(Long.parseLong(args.get(i))).getLongID();
-            System.out.println("kek 2" + p.role);
           }
         } catch (Throwable e) {}
 

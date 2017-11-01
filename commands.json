@@ -1,0 +1,23 @@
+{
+	"Moderation": {
+		"warn": "warn @user 'reason'\n\n\n\nAdd the specified warning to the specified user. (ex: warn @jarza didnt show bob)",
+		"warnl": "warnl [@user]\n\nDisplays all warnings in guild. If you tag a user then it will list his warnings only. (ex: warnl)",
+		"warnc": "warnc @user [number]\n\nClears all warnings for the specified user, unless the ordinal number of a warning from the user is specified. (ex: warnc @jarza 3)",
+		"warnr": "warnr role\n\nAdds a role to the pool of roles which can manage user warnings, if no role is provided it lists all warning roles. (ex: warnr staff)",
+		"warnp": "warnp kick/ban numberOfWarns\n\nA user will be kicked or banned once they reach numberOfWarns warnings. (ex: warnp kick 3)",
+		"modr": "modr [role]\n\nAdds a role to the pool of roles which can manage the bot settings on this server, if no role is provided it lists all moderation roles. (ex: modr Admins)",
+		"rule": "rule commandName allow/deny channel (and or) role\n\nAllows or denies a commands usage in that channel and or role, which ever is specified. (ex: rule say deny general), (ex: rule say allow general staff)",
+		"roleids": "roleids\n\nPrints out all role names with their respective IDs. It's safer to use IDs rather than textual names of roles or channels.",
+		"backuppins": "backuppins [channelName]\n\nIt will save pins in a specified channel, or create a new one called Pins if no channel name is given.",
+		"ruler": "ruler [number] [number]\n\nDisplays all rules in the server, removes a rule if one number is specified and swaps two rules if two numbers are specified. (ex: ruler 1)"
+	},
+	"Fun": {
+		"meme": "meme [@user]\n\nGets one of the saved quotes for that guild, or a user if one is specified. (ex: meme @jarza)",
+		"say": "say text\n\nThe bot will say that text and delete the commanders message. (ex: say I am autonomous. Robots will rise.)",
+		"satansbae": "satansbae\n\nThe bot will quote some spicy Omar Varela lyrics.",
+		"dating": "dating\n\nGenerates a dating advert."
+	}, 
+	"Utility": {
+		"invite": "invite\n\nShares the bot invite link if you want to invite Jarzu to your own server."
+	}
+}

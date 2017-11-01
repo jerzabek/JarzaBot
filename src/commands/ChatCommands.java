@@ -37,6 +37,11 @@ public class ChatCommands {
         Util.sendMessage(event.getChannel(), "Error: you can only have up to 25 permissions.");
         return;
       }
+      if(args.isEmpty())
+        return;
+      if(args.size() == 1)
+        return;
+
 
       DataManager.setPermission(Permission.commandParse(args, event.getGuild().getLongID()), event.getGuild().getLongID());
     });

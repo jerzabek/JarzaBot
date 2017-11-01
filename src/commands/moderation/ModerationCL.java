@@ -11,6 +11,7 @@ import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.EmbedBuilder;
 import sx.blah.discord.util.RequestBuffer;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -20,6 +21,9 @@ public class ModerationCL {
   public static void init() {
     ChatCommands.commandMap.put("warnp", (event, args) -> {
       Punishments p;
+      if(args.isEmpty() || args.size() != 2)
+        return;
+
       switch (args.get(1)) {
         case "kick":
           p = Punishments.kick;
@@ -53,8 +57,14 @@ public class ModerationCL {
 
       String text = "";
       // System.out.println(Util.userToID(args.get(0)));
-      Long id = event.getGuild().getUserByID(Util.userToID(args.get(0))).getLongID();
-      // Long id = 0L;
+      Long id;
+      try{
+        id = event.getGuild().getUserByID(Util.userToID(args.get(0))).getLongID();
+      }catch(NumberFormatException e){
+        Util.sendMessage(event.getChannel(), "**>Error: you must tag the user you are warning!**");
+        return;
+      }
+
       args.remove(0);
       {
         String t = "";
@@ -89,9 +99,18 @@ public class ModerationCL {
       // return;
       // }
 
-      Long id = event.getGuild().getUserByID(Util.userToID(args.get(0))).getLongID();
+      if(args.isEmpty() || args.size() > 2)
+        return;
 
-      if (args.size() > 1) {
+      Long id;
+      try{
+        id = event.getGuild().getUserByID(Util.userToID(args.get(0))).getLongID();
+      }catch(NumberFormatException e){
+        Util.sendMessage(event.getChannel(), "**>Error: you must tag the user you are warning!**");
+        return;
+      }
+
+      if (args.size() == 2) {
         Moderation.clearWarn(Integer.parseInt(args.get(1)) - 1, id, event);
       } else {
         Moderation.clearWarn(-1, id, event);
@@ -112,9 +131,17 @@ public class ModerationCL {
       if (!cont) {
         Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
         return;
+      }else{
+        Util.sendMessage(event.getChannel(),
+          "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
       }
       if (args.size() == 1) {
-        id = event.getGuild().getUserByID(Util.userToID(args.get(0))).getLongID();
+        try{
+          id = event.getGuild().getUserByID(Util.userToID(args.get(0))).getLongID();
+        }catch(NumberFormatException e){
+          Util.sendMessage(event.getChannel(), "**>Error: you must tag the user you are warning!**");
+          return;
+        }
         mode = "b";
       }
 
@@ -123,76 +150,114 @@ public class ModerationCL {
     });
 
     ChatCommands.commandMap.put("modr", (event, args) -> {
-      String role = args.get(0);
-      IRole rol = event.getGuild().getRoles().get(0);
-      boolean f = false;
-      Long temp = 0L;
-      try{
-        temp = Long.parseLong(args.get(0));
-      }catch(NumberFormatException e){
-        e.printStackTrace();
-      }
-
-      for (IRole r : event.getGuild().getRoles()) {
-        if (r.getName().equals(role) || r.getLongID() == temp) {
-          rol = r;
-          f = true;
+      if(!DataManager.getModrole(event.getGuild().getLongID()).isEmpty()) {
+        boolean cont = false;
+        for (Long a : DataManager.getModrole(event.getGuild().getLongID())) {
+          if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))) {
+            cont = true;
+          }
         }
+        if (!cont) {
+          Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
+          return;
+        }
+      }else{
+        Util.sendMessage(event.getChannel(),
+          "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
       }
 
-      if (rol == event.getGuild().getRoles().get(0) && !f) {
-        Util.sendMessage(event.getChannel(), "**>Error: bad role u dipshite**");
-        return;
+      if(args.isEmpty()) {
+        String stuff = "Moderator roles:\n";
+        for(Long p : DataManager.getModrole(event.getGuild().getLongID())){
+          stuff += event.getGuild().getRoleByID(p).getName() + "\n";
+        }
+        Util.sendMessage(event.getChannel(), stuff);
+      }else if(args.size() == 1) {
+        String role = args.get(0);
+        IRole rol = event.getGuild().getRoles().get(0);
+        boolean f = false;
+        Long temp = 0L;
+        try {
+          temp = Long.parseLong(args.get(0));
+        } catch (NumberFormatException e) {
+        }
+
+        for (IRole r : event.getGuild().getRoles()) {
+          if (r.getName().equals(role) || r.getLongID() == temp) {
+            rol = r;
+            f = true;
+          }
+        }
+
+        if (rol == event.getGuild().getRoles().get(0) && !f) {
+          Util.sendMessage(event.getChannel(), "**>Error: bad role u dipshite**");
+          return;
+        }
+        Moderation.setModRole(rol, event);
       }
-      Moderation.setModRole(rol, event);
     });
 
     ChatCommands.commandMap.put("warnr", (event, args) -> {
-      boolean cont = false;
-      for(Long a : DataManager.getModrole(event.getGuild().getLongID())){
-        if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))){
-          cont = true;
+      if(!DataManager.getModrole(event.getGuild().getLongID()).isEmpty()) {
+        boolean cont = false;
+        for (Long a : DataManager.getModrole(event.getGuild().getLongID())) {
+          if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))) {
+            cont = true;
+          }
         }
-      }
-      if (!cont) {
-        Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
-        return;
-      }
-      if(args.isEmpty())
-        return;
-      String role = args.get(0);
-      IRole rol = event.getGuild().getRoles().get(0);
-      boolean f = false;
-      Long temp = 0L;
-      try{
-        temp = Long.parseLong(args.get(0));
-      }catch(NumberFormatException e){
-        e.printStackTrace();
-      }
-      for (IRole r : event.getGuild().getRoles()) {
-        if (r.getName().equals(role) || r.getLongID() == temp) {
-          rol = r;
-          f = true;
+        if (!cont) {
+          Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
+          return;
         }
+      }else{
+        Util.sendMessage(event.getChannel(),
+          "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
       }
+      if(args.isEmpty()) {
+        String stuff = "Warning roles:\n";
+        for(Long p : DataManager.getWarnrole(event.getGuild().getLongID())){
+          stuff += event.getGuild().getRoleByID(p).getName() + "\n";
+        }
+        Util.sendMessage(event.getChannel(), stuff);
+      }else if(args.size() == 1) {
+        String role = args.get(0);
+        IRole rol = event.getGuild().getRoles().get(0);
+        boolean f = false;
+        Long temp = 0L;
+        try {
+          temp = Long.parseLong(args.get(0));
+        } catch (NumberFormatException e) {
+        }
+        for (IRole r : event.getGuild().getRoles()) {
+          if (r.getName().equals(role) || r.getLongID() == temp) {
+            rol = r;
+            f = true;
+          }
+        }
 
-      if (rol == event.getGuild().getRoles().get(0) && !f) {
-        Util.sendMessage(event.getChannel(), "**>Error: bad role u dipshite**");
-        return;
+        if (rol == event.getGuild().getRoles().get(0) && !f) {
+          Util.sendMessage(event.getChannel(), "**>Error: bad role u dipshite**");
+          return;
+        }
+        Moderation.setWarnRole(rol, event);
       }
-      Moderation.setWarnRole(rol, event);
     });
 
     ChatCommands.commandMap.put("backuppins", (event, args) -> {
-      boolean cont = false;
-      for(Long a : DataManager.getModrole(event.getGuild().getLongID())){
-        if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))){
-          cont = true;
+      if(!DataManager.getModrole(event.getGuild().getLongID()).isEmpty()) {
+        boolean cont = false;
+        for(Long a : DataManager.getModrole(event.getGuild().getLongID())){
+          if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))){
+            cont = true;
+          }
         }
-      }
-      if (!cont) {
-        Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
-        return;
+        if (!cont) {
+          Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
+          return;
+        }
+      }else{
+        Util.sendMessage(event.getChannel(),
+          "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
       }
       if(args.size() > 0) {
         if (event.getGuild().getChannelsByName(args.get(0)).size() == 0) {
@@ -209,29 +274,35 @@ public class ModerationCL {
             ps.overrideUserPermissions(MainBot.cli.getOurUser(), EnumSet.of(Permissions.SEND_MESSAGES), null);
             DataManager.setPinbu(event.getGuild().getLongID(), ps.getLongID());
           }else{
+            ps.overrideRolePermissions(event.getGuild().getEveryoneRole(), null, EnumSet.of(Permissions.SEND_MESSAGES));
+            ps.overrideUserPermissions(MainBot.cli.getOurUser(), EnumSet.of(Permissions.SEND_MESSAGES), null);
             DataManager.setPinbu(event.getGuild().getLongID(), ps.getLongID());
           }
           Util.sendMessage(event.getChannel(), "*Success! Pins will be stored in " + ps.getName() + "*");
         }else{
           DataManager.setPinbu(event.getGuild().getLongID(), 0l);
-          Util.sendMessage(event.getChannel(), "*Success! Pins will no longer be backed up.");
+          Util.sendMessage(event.getChannel(), "*Success! Pins will no longer be backed up.*");
         }
       }
     });
 
     ChatCommands.commandMap.put("roleids", (event, args) -> {
-      boolean cont = false;
-      for(Long a : DataManager.getModrole(event.getGuild().getLongID())){
-        if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))){
-          cont = true;
+      if (!DataManager.getModrole(event.getGuild().getLongID()).isEmpty()) {
+        boolean cont = false;
+        for (Long a : DataManager.getModrole(event.getGuild().getLongID())) {
+          if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))) {
+            cont = true;
+          }
         }
-      }
-      if (!cont) {
-        Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
-        return;
+        if (!cont) {
+          Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
+          return;
+        }
+      } else {
+        Util.sendMessage(event.getChannel(), "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
       }
       String s = "";
-      for(IRole r : event.getGuild().getRoles()){
+      for (IRole r : event.getGuild().getRoles()) {
         if(!r.isEveryoneRole())
           s += "@" + r.getName() + " - " + r.getLongID() + "\n";
       }
@@ -242,16 +313,21 @@ public class ModerationCL {
     });
 
     ChatCommands.commandMap.put("ruler", (event, args) -> {
-      boolean cont = false;
-      for(Long a : DataManager.getModrole(event.getGuild().getLongID())){
-        if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))){
-          cont = true;
+      if (!DataManager.getModrole(event.getGuild().getLongID()).isEmpty()) {
+        boolean cont = false;
+        for(Long a : DataManager.getModrole(event.getGuild().getLongID())){
+          if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))){
+            cont = true;
+          }
         }
+        if (!cont) {
+          Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
+          return;
+        }
+      } else {
+        Util.sendMessage(event.getChannel(), "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
       }
-      if (!cont) {
-        Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
-        return;
-      }
+
       EmbedBuilder builder = new EmbedBuilder();
       builder.withFooterText("Permissions for this guild");
       if(args.isEmpty()){
@@ -265,44 +341,43 @@ public class ModerationCL {
         }
 
         RequestBuffer.request(() -> event.getChannel().sendMessage(builder.build()));
+      }else if(args.size() == 1){
+        List<Permission> ls = new ArrayList<>();
+        DataManager.getPerms(event.getGuild().getLongID()).forEach(ls::add);
+        ls.remove(ls.get(Integer.parseInt(args.get(0))));
+        DataManager.setPermissions(ls, event.getGuild().getLongID());
       }else if(args.size() == 2){
         List<Permission> ls = new ArrayList<>();
         DataManager.getPerms(event.getGuild().getLongID()).forEach(ls::add);
-        int t, tt;
+
+        int a, b;
         try{
-          t = Integer.parseInt(args.get(1));
+          a = Integer.parseInt(args.get(0));
+          b = Integer.parseInt(args.get(1));
         }catch(NumberFormatException e){
           e.printStackTrace();
           return;
         }
+        Permission temp = ls.get(a);
+        Permission tempb = ls.get(b);
 
-        if(args.get(0).toLowerCase().equals("e")){
-          ls.remove(t);
-          DataManager.setPermissions(ls, event.getGuild().getLongID());
-        }else{
-          try{
-            tt = Integer.parseInt(args.get(0));
-          }catch(NumberFormatException e){
-            e.printStackTrace();
-            return;
-          }
-          if(tt >= t)
-            return;
-
-          Permission temprem = null;
-          List<Permission> nls = new ArrayList<>();
-          for(int i = 0; i < DataManager.getPerms(event.getGuild().getLongID()).size(); i++) {
-            if(i == t) {
-              temprem = ls.get(i);
-              continue;
-            }else if (i == tt){
-              nls.add(temprem);
-            }else {
-              nls.add(ls.get(i));
-            }
-          }
-          DataManager.setPermissions(nls, event.getGuild().getLongID());
+        if(a > b) {
+          ls.remove(ls.get(a));
+          ls.remove(ls.get(b));
+        }else if(a < b){
+          ls.remove(ls.get(b));
+          ls.remove(ls.get(a));
         }
+
+        if(a > b) {
+          ls.add(b, temp);
+          ls.add(a, tempb);
+        }else if(a < b){
+          ls.add(a, tempb);
+          ls.add(b, temp);
+        }
+
+        DataManager.setPermissions(ls, event.getGuild().getLongID());
       }
     });
   }

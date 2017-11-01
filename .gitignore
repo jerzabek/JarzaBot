@@ -1,7 +1,10 @@
 # Bot info etc.
-config.dat
 bin/
 .idea/
 classes/
 JarzaBot.iml
-*.json
+config.json
+memes.json
+settings.json
+warnings.json
+modules/
