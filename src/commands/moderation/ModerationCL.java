@@ -5,8 +5,10 @@ import db.DataManager;
 import main.MainBot;
 import main.Util;
 import org.eclipse.jetty.client.api.Request;
+import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IRole;
+import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.EmbedBuilder;
 import sx.blah.discord.util.RequestBuffer;
@@ -54,33 +56,25 @@ public class ModerationCL {
         Util.sendMessage(event.getChannel(), "**>Error: warning role not set. Please run j.warnr roleName**");
         return;
       }
-
       String text = "";
-      // System.out.println(Util.userToID(args.get(0)));
-      Long id;
-      try{
-        id = event.getGuild().getUserByID(Util.userToID(args.get(0))).getLongID();
-      }catch(NumberFormatException e){
+
+      if(event.getMessage().getMentions().isEmpty()){
         Util.sendMessage(event.getChannel(), "**>Error: you must tag the user you are warning!**");
         return;
       }
 
       args.remove(0);
-      {
-        String t = "";
-        int counter = 0;
-        for (Object a : args.toArray()) {
-          counter++;
-          if (!(counter == args.size())) {
-            t = " ";
-          } else {
-            t = "";
-          }
-          text += a + t;
+      if(!args.isEmpty()){
+        args.remove(0);
+        for(String b : args){
+          text += b + " ";
         }
+        text.trim();
+      }else{
+        text = "-no reason-";
       }
 //       System.out.println("id: " + id + " res: " + text);
-      Moderation.warn(id, text, event);
+      Moderation.warn(event.getMessage().getMentions().get(0).getLongID(), text, event);
     });
 
     ChatCommands.commandMap.put("warnc", (event, args) -> {
@@ -102,18 +96,23 @@ public class ModerationCL {
       if(args.isEmpty() || args.size() > 2)
         return;
 
-      Long id;
-      try{
-        id = event.getGuild().getUserByID(Util.userToID(args.get(0))).getLongID();
-      }catch(NumberFormatException e){
+//      Long id;
+//      try{
+//        id = event.getGuild().getUserByID(Util.userToID(args.get(0))).getLongID();
+//      }catch(NumberFormatException e){
+//        Util.sendMessage(event.getChannel(), "**>Error: you must tag the user you are warning!**");
+//        return;
+//      }
+
+      if(event.getMessage().getMentions().isEmpty()){
         Util.sendMessage(event.getChannel(), "**>Error: you must tag the user you are warning!**");
         return;
       }
 
       if (args.size() == 2) {
-        Moderation.clearWarn(Integer.parseInt(args.get(1)) - 1, id, event);
+        Moderation.clearWarn(Integer.parseInt(args.get(1)) - 1, event.getMessage().getMentions().get(0).getLongID(), event);
       } else {
-        Moderation.clearWarn(-1, id, event);
+        Moderation.clearWarn(-1, event.getMessage().getMentions().get(0).getLongID(), event);
       }
 
 
@@ -136,12 +135,11 @@ public class ModerationCL {
           "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
       }
       if (args.size() == 1) {
-        try{
-          id = event.getGuild().getUserByID(Util.userToID(args.get(0))).getLongID();
-        }catch(NumberFormatException e){
+        if(event.getMessage().getMentions().isEmpty()){
           Util.sendMessage(event.getChannel(), "**>Error: you must tag the user you are warning!**");
           return;
         }
+        id = event.getMessage().getMentions().get(0).getLongID();
         mode = "b";
       }
 
@@ -181,7 +179,6 @@ public class ModerationCL {
           temp = Long.parseLong(args.get(0));
         } catch (NumberFormatException e) {
         }
-
         for (IRole r : event.getGuild().getRoles()) {
           if (r.getName().equals(role) || r.getLongID() == temp) {
             rol = r;
@@ -260,27 +257,29 @@ public class ModerationCL {
           "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
       }
       if(args.size() > 0) {
-        if (event.getGuild().getChannelsByName(args.get(0)).size() == 0) {
+        if (event.getMessage().getChannelMentions().isEmpty()) {
           Util.sendMessage(event.getChannel(), "*Error: Invalid channel*");
         }else{
-          DataManager.setPinbu(event.getGuild().getLongID(), event.getGuild().getChannelsByName(args.get(0)).get(0).getLongID());
+          DataManager.setPinbu(event.getGuild().getLongID(), event.getMessage().getChannelMentions().get(0).getLongID());
           Util.sendMessage(event.getChannel(), "*Success!*");
         }
       }else{
-        if(DataManager.getPinbu(event.getGuild().getLongID()).equals(0L)){
-          IChannel ps = event.getGuild().createChannel("pins");
+        if(DataManager.getPinbu(event.getGuild().getLongID()).equals(-1L)){
+          IChannel ps;
           if(event.getGuild().getChannelsByName("pins").size() == 0){
+            ps = event.getGuild().createChannel("pins");
             ps.overrideRolePermissions(event.getGuild().getEveryoneRole(), null, EnumSet.of(Permissions.SEND_MESSAGES));
             ps.overrideUserPermissions(MainBot.cli.getOurUser(), EnumSet.of(Permissions.SEND_MESSAGES), null);
             DataManager.setPinbu(event.getGuild().getLongID(), ps.getLongID());
           }else{
+            ps = event.getGuild().getChannelsByName("pins").get(0);
             ps.overrideRolePermissions(event.getGuild().getEveryoneRole(), null, EnumSet.of(Permissions.SEND_MESSAGES));
             ps.overrideUserPermissions(MainBot.cli.getOurUser(), EnumSet.of(Permissions.SEND_MESSAGES), null);
             DataManager.setPinbu(event.getGuild().getLongID(), ps.getLongID());
           }
           Util.sendMessage(event.getChannel(), "*Success! Pins will be stored in " + ps.getName() + "*");
         }else{
-          DataManager.setPinbu(event.getGuild().getLongID(), 0l);
+          DataManager.setPinbu(event.getGuild().getLongID(), -1L);
           Util.sendMessage(event.getChannel(), "*Success! Pins will no longer be backed up.*");
         }
       }
@@ -379,6 +378,70 @@ public class ModerationCL {
 
         DataManager.setPermissions(ls, event.getGuild().getLongID());
       }
+    });
+
+    ChatCommands.commandMap.put("kick", (MessageReceivedEvent event, List<String> args) -> {
+      if(args.isEmpty())
+        return;
+
+      if (!DataManager.getModrole(event.getGuild().getLongID()).isEmpty()) {
+        boolean cont = false;
+        for(Long a : DataManager.getModrole(event.getGuild().getLongID())){
+          if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))){
+            cont = true;
+          }
+        }
+        if (!cont) {
+          Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
+          return;
+        }
+      } else {
+        Util.sendMessage(event.getChannel(), "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
+        return;
+      }
+
+      if(args.size() > 1) {
+        args.remove(0);
+        String a = "";
+        for(String b : args){
+          a += b + " ";
+        }
+        event.getGuild().kickUser(event.getMessage().getMentions().get(0), a);
+      }
+
+      Util.sendMessage(event.getChannel(), "**>User kicked.**");
+    });
+
+    ChatCommands.commandMap.put("ban", (MessageReceivedEvent event, List<String> args) -> {
+      if(args.isEmpty())
+        return;
+
+      if (!DataManager.getModrole(event.getGuild().getLongID()).isEmpty()) {
+        boolean cont = false;
+        for(Long a : DataManager.getModrole(event.getGuild().getLongID())){
+          if (event.getAuthor().getRolesForGuild(event.getGuild()).contains(event.getGuild().getRoleByID(a))){
+            cont = true;
+          }
+        }
+        if (!cont) {
+          Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
+          return;
+        }
+      } else {
+        Util.sendMessage(event.getChannel(), "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
+        return;
+      }
+
+      if(args.size() > 1) {
+        args.remove(0);
+        String a = "";
+        for(String b : args){
+          a += b + " ";
+        }
+        event.getGuild().banUser(event.getMessage().getMentions().get(0), a);
+      }
+
+      Util.sendMessage(event.getChannel(), "**>User banned.**");
     });
   }
   

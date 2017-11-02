@@ -96,7 +96,7 @@ public class ChatEvents {
       return;
     if(!DataManager.getPinbu(event.getGuild().getLongID()).equals(0)) {
       IMessage last = event.getChannel().getPinnedMessages().get(event.getChannel().getPinnedMessages().size() - 1);
-      if (event.getChannel().getPinnedMessages().size() >= 40) {
+      if (event.getChannel().getPinnedMessages().size() >= 3) {
         pinClear(last, event);
       }
     }
@@ -104,12 +104,23 @@ public class ChatEvents {
 
   private void pinClear(IMessage last, MessagePinEvent event){
     event.getChannel().unpin(last);
-
     String pin = last.getFormattedContent();
     //    msg = (pin.equals("") ? "" : "\"" + pin + "\" ") + tabs + " *-" + event.getAuthor().getDisplayName(event.getGuild()) + "*"
     EmbedBuilder bub = new EmbedBuilder();
     bub.withThumbnail(last.getAuthor().getAvatarURL());
-    bub.appendField((pin.equals("") ? "-" : "\"" + pin + "\" "), " *-" + last.getAuthor().getName() + "*", false);
+
+    if(last.getEmbeds().isEmpty()) {
+      if (pin.equals(""))
+        bub.withFooterText("-" + last.getAuthor().getName());
+      else
+        bub.appendField("\"" + last.getFormattedContent() + "\" ", " *-" + last.getAuthor().getName() + "*", false);
+    }else{
+      last.getEmbeds().get(0).getEmbedFields().forEach(bub::appendField);
+      bub.withAuthorIcon(last.getAuthor().getAvatarURL());
+      bub.withAuthorName(last.getAuthor().getName());
+      bub.withThumbnail(last.getEmbeds().get(0).getThumbnail().getUrl());
+      bub.withFooterText("In #" + last.getChannel().getName());
+    }
     if (last.getAttachments().size() > 0) {
       for (IMessage.Attachment a : last.getAttachments()) {
         bub.withImage(a.getUrl());

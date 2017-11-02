@@ -5,6 +5,7 @@ import db.DataManager;
 import main.MainBot;
 import main.Util;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.EmbedBuilder;
 import sx.blah.discord.util.RequestBuffer;
@@ -37,43 +38,35 @@ public class MemeCL {
             name += a + " ";
           }
         }
+
         if(!event.getGuild().getUsersByName(name, true).isEmpty())
          meme = DataManager.getMemes(event.getGuild().getUsersByName(name, true).get(0).getLongID(), event.getGuild().getLongID());
         else if(!event.getGuild().getUsersByName(name, false).isEmpty()) {
           meme = DataManager.getMemes(event.getGuild().getUsersByName(name, false).get(0).getLongID(), event.getGuild().getLongID());
         }else {
-          EmbedBuilder builder = new EmbedBuilder();
-          builder.appendField("No memes available for that user", "¯\\_(ツ)_/¯", false);
-          RequestBuffer.request(() -> {
-            try {
-              event.getChannel().sendMessage(builder.build());
-            } catch (DiscordException e) {
-              System.err.println("Hmmm shit went sideways... Here's why: ");
-              e.printStackTrace();
-            }
-          });
-          return;
+          if(!event.getMessage().getMentions().isEmpty()){
+            meme = DataManager.getMemes(event.getMessage().getMentions().get(0).getLongID(), event.getGuild().getLongID());
+          }else {
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.appendField("No memes available for that user", "¯\\_(ツ)_/¯", false);
+            RequestBuffer.request(() -> {
+              try {
+                event.getChannel().sendMessage(builder.build());
+              } catch (DiscordException e) {
+                System.err.println("Hmmm shit went sideways... Here's why: ");
+                e.printStackTrace();
+              }
+            });
+            return;
+          }
         }
       }else{
         meme = DataManager.getMeme(event.getGuild().getLongID());
-//        System.out.println("meme only");
       }
 
-//      Long crt = Long.parseLong(meme.getFormattedContent().split("\n")[1]);
-//      Long crt = Long.parseLong(meme.text.substring(0, 18));
-//      Long guild = Long.parseLong(meme.getFormattedContent().split("\n")[0]);
-//      String msg = meme.text.substring(38);
-//      Long guild = Long.parseLong(meme.getFormattedContent().substring(19, 37));
-      String tabs;
-      tabs = "\n";
       if(meme != null) {
-        for (int x = 0; x < meme.text.length() * 2; x++) {
-          tabs += " ";
-        }
-        //      msg = "\"" + msg + "\" " + tabs + " *-" + MainBot.cli.getUserByID(crt).getName() + "*";
         EmbedBuilder builder = new EmbedBuilder();
         String username, memetext, timestamp, avtrURL;
-        //      System.out.println(meme.user);
         if (meme.user != -1L) {
           if(event.getGuild().getUserByID(meme.user) == null) {
             builder.appendField("No memes available for that user",
@@ -88,7 +81,6 @@ public class MemeCL {
             });
             return;
           }else {
-
             username = event.getGuild().getUserByID(meme.user).getName();
             memetext = meme.text;
             timestamp = meme.timestamp;
@@ -148,14 +140,20 @@ public class MemeCL {
       } catch (IOException e) {
         e.printStackTrace();
       }
+      IUser us;
+      if(!event.getMessage().getMentions().isEmpty()){
+        us = event.getMessage().getMentions().get(0);
+      }else{
+        us = event.getAuthor();
+      }
 
       Graphics2D g = img.createGraphics();
-      BufferedImage i = null;
-      BufferedInputStream in = null;
+      BufferedImage i;
+      BufferedInputStream in;
       try {
         URL url;
         URLConnection uc;
-        url = new URL(event.getAuthor().getAvatarURL().replace("webp", "jpg"));
+        url = new URL(us.getAvatarURL().replace("webp", "jpg"));
         uc = url.openConnection();
         uc.setRequestProperty("User-Agent",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:44.0) Gecko/20100101 Firefox/44.0");
@@ -166,7 +164,7 @@ public class MemeCL {
         if (lox[3][3] > 0) {
           g.setFont(new Font("Arial", Font.BOLD, 25));
           g.setColor(new Color(105, 102, 180));
-          g.drawString(event.getAuthor().getName(), lox[id][3], lox[id][4]);
+          g.drawString(us.getName(), lox[id][3], lox[id][4]);
         }
 
       } catch (MalformedURLException e) {

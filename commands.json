@@ -9,7 +9,9 @@
 		"rule": "rule commandName allow/deny channel (and or) role\n\nAllows or denies a commands usage in that channel and or role, which ever is specified. (ex: rule say deny general), (ex: rule say allow general staff)",
 		"roleids": "roleids\n\nPrints out all role names with their respective IDs. It's safer to use IDs rather than textual names of roles or channels.",
 		"backuppins": "backuppins [channelName]\n\nIt will save pins in a specified channel, or create a new one called Pins if no channel name is given.",
-		"ruler": "ruler [number] [number]\n\nDisplays all rules in the server, removes a rule if one number is specified and swaps two rules if two numbers are specified. (ex: ruler 1)"
+		"ruler": "ruler [number] [number]\n\nDisplays all rules in the server, removes a rule if one number is specified and swaps two rules if two numbers are specified. (ex: ruler 1)",
+		"kick": "kick @user [reason]\n\nKicks the tagged user with the given reason",
+		"ban": "ban @user [reason]\n\nbans the tagged user with the given reason."
 	},
 	"Fun": {
 		"meme": "meme [@user]\n\nGets one of the saved quotes for that guild, or a user if one is specified. (ex: meme @jarza)",

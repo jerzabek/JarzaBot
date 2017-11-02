@@ -1,6 +1,5 @@
 package db;
 
-import commands.ChatCommand;
 import commands.ChatCommands;
 import commands.memes.Meme;
 import commands.moderation.Permission;
@@ -8,7 +7,6 @@ import commands.moderation.Setting;
 import commands.moderation.Warning;
 import exceptions.InvalidMemeException;
 import exceptions.InvalidWarningException;
-import main.MainBot;
 import main.Util;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -33,7 +31,7 @@ import java.util.Random;
  * <br>
  * &#07;document all files and fix this whole class
  * <br>
- * &#07;move old things to new format
+ * &#07;move old things to new format (nope don't wanna/don't have to)
  */
 public class DataManager {
 
@@ -163,15 +161,15 @@ public class DataManager {
       return new Meme("No maymays found /shrug", 0L, 0L, "");
 
 //    System.out.println(memeobj.get(Meme.TEXTF));
-    JSONArray atts = null;
-    Object[] setts = null;
+    List<String> attssl = new ArrayList<>();
     if (!((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).isEmpty()) {
-      atts = ((JSONArray) memeobj.get(Meme.ATTACHMENTSF));
-      setts = atts.toArray();
+      for(Object a : ((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).toArray()){
+        attssl.add(a.toString());
+      }
     }
 
 
-    fin = new Meme(memeobj.get(Meme.TEXTF).toString(), (Long) memeobj.get(Meme.USERF), (Long) memeobj.get(Meme.GUILDF), memeobj.get(Meme.TIMESTAMPF).toString(), (String[]) setts);
+    fin = new Meme(memeobj.get(Meme.TEXTF).toString(), (Long) memeobj.get(Meme.USERF), (Long) memeobj.get(Meme.GUILDF), memeobj.get(Meme.TIMESTAMPF).toString(), attssl.toArray());
 
     return fin;
   }
@@ -497,7 +495,7 @@ public class DataManager {
       return;
 
     String perm = "";
-    System.out.println(p.role + "< someone added dis");
+//    System.out.println(p.role + "< someone added dis");
     perm += p.command + ";" + (p.value ? "allow" : "deny") + ";" + p.role + ";" + p.channel;
     if(!settings.containsKey(guildid.toString())){
       settings.put(guildid.toString(), newSettingsObj);

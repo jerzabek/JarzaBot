@@ -43,7 +43,7 @@ public class ChatCommands {
         return;
 
 
-      DataManager.setPermission(Permission.commandParse(args, event.getGuild().getLongID()), event.getGuild().getLongID());
+      DataManager.setPermission(Permission.commandParse(args, event.getGuild().getLongID(), event), event.getGuild().getLongID());
     });
 
     ChatCommands.adminMap.put("logoff", (event, args) -> {
