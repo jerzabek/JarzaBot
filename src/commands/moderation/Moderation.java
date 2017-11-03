@@ -24,11 +24,11 @@ public class Moderation {
         } catch (InvalidWarningException e) {
           e.printStackTrace();
         }
-        Util.sendMessage(event.getChannel(),
+        Util.sendMessage(event,
             "Warned *" + event.getGuild().getUserByID(user).getName() + "#" + event.getGuild().getUserByID(user).getDiscriminator() + "* for *'" + reason + "'*.");
         checkStuff(user, reason, event);
       }else {
-        Util.sendMessage(event.getChannel(), "**Error: no punishments set, please do j.warnp *number* *(kick or ban)***");
+        Util.sendMessage(event, "**Error: no punishments set, please do j.warnp *number* *(kick or ban)***");
       }
     }
 
@@ -38,12 +38,12 @@ public class Moderation {
     switch (effect) {
       case ban:
         DataManager.setBanp(event.getGuild().getLongID(), warnings);
-        Util.sendMessage(event.getChannel(),
+        Util.sendMessage(event,
             "**>Set punishment for " + warnings + " warnings to ban.**");
         break;
       case kick:
         DataManager.setKickp(event.getGuild().getLongID(), warnings);
-        Util.sendMessage(event.getChannel(),
+        Util.sendMessage(event,
             "**>Set punishment for " + warnings + " warnings to kick.**");
         break;
     }
@@ -57,7 +57,7 @@ public class Moderation {
       }
     }
     if (!cont) {
-      Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
+      Util.sendMessage(event, "**>Error: inssuficient permission**");
       return;
     }
     List<Warning> w = DataManager.getWarns(event.getGuild().getLongID(), user);
@@ -68,11 +68,11 @@ public class Moderation {
         } catch (InvalidWarningException e) {
           e.printStackTrace();
         }
-        Util.sendMessage(event.getChannel(),
+        Util.sendMessage(event,
             "**>Removed *" + event.getGuild().getUserByID(user).getName() + "'s* warning.**");
 
       } else {
-        Util.sendMessage(event.getChannel(), "**>Error: warning no existo!**");
+        Util.sendMessage(event, "**>Error: warning no existo!**");
       }
 
       // if(warnings.get(user).get(warnId) != null) {
@@ -96,16 +96,16 @@ public class Moderation {
       }
 //      Util.sendMessage(event.getChannel(), "Removing all warnings is currently disabled :/");
       if(cl == w.size() && cl != 0)
-        Util.sendMessage(event.getChannel(), "**>Removed all of *" + event.getGuild().getUserByID(user).getName() + "'s* warnings.**");
+        Util.sendMessage(event, "**>Removed all of *" + event.getGuild().getUserByID(user).getName() + "'s* warnings.**");
       else if(cl == 0)
-        Util.sendMessage(event.getChannel(), "**>All warnings allready cleared.**");
+        Util.sendMessage(event, "**>All warnings allready cleared.**");
       else
-        Util.sendMessage(event.getChannel(), "**>Removed " + cl + " warning(s) for *" + event.getGuild().getUserByID(user).getName() + "*.**");
+        Util.sendMessage(event, "**>Removed " + cl + " warning(s) for *" + event.getGuild().getUserByID(user).getName() + "*.**");
     } else {
-      Util.sendMessage(event.getChannel(), "**>Error: bad warning!**");
+      Util.sendMessage(event, "**>Error: bad warning!**");
     }
     // }else {
-    // Util.sendMessage(event.getChannel(), "**>Error: user has no warnings!**");
+    // Util.sendMessage(event, "**>Error: user has no warnings!**");
     // }
   }
 
@@ -121,7 +121,7 @@ public class Moderation {
     if (group.size() == 0) {
       builder.appendField("No warnings available",
           "¯\\_(ツ)_/¯", false);
-      RequestBuffer.request(() -> event.getChannel().sendMessage(builder.build()));
+      Util.sendMessage(event, builder.build());
     } else if (group.size() < 26) {
       for (Warning a : group) {
         if (!a.cleared) {
@@ -139,7 +139,7 @@ public class Moderation {
               false);
         }
       }
-      RequestBuffer.request(() -> event.getChannel().sendMessage(builder.build()));
+      Util.sendMessage(event, builder.build());
     } else {
       String m = "";
       for (Warning a : group) {
@@ -153,7 +153,7 @@ public class Moderation {
                   + event.getGuild().getUserByID(a.user).getDiscriminator() + "~~* (cleared by " + event.getGuild().getUserByID(a.clearedby).getName() + "#" + event.getGuild().getUserByID(a.clearedby).getDiscriminator() + ")\n";
         }
       }
-      Util.sendMessage(event.getChannel(), m);
+      Util.sendMessage(event, m);
     }
     
 
@@ -168,7 +168,7 @@ public class Moderation {
           authorMod = true;
       }
     }else{
-      Util.sendMessage(event.getChannel(),
+      Util.sendMessage(event,
           "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
       return;
     }
@@ -176,13 +176,13 @@ public class Moderation {
     if (authorMod) {
       if(!DataManager.getWarnrole(event.getGuild().getLongID()).contains(role.getLongID())) {
         DataManager.setWarnrole(event.getGuild().getLongID(), role.getLongID());
-        Util.sendMessage(event.getChannel(), "**>Set warning role to: *" + role.getName() + "*.**");
+        Util.sendMessage(event, "**>Set warning role to: *" + role.getName() + "*.**");
       }else{
         DataManager.removeWarnr(event.getGuild().getLongID(), role.getLongID());
-        Util.sendMessage(event.getChannel(), "**>Removed warning role: *" + role.getName() + "*.**");
+        Util.sendMessage(event, "**>Removed warning role: *" + role.getName() + "*.**");
       }
     } else {
-      Util.sendMessage(event.getChannel(),
+      Util.sendMessage(event,
           "**>Error: you dont have permission to edit the bot settings.**");
     }
   }
@@ -202,13 +202,13 @@ public class Moderation {
     if (authorMod) {
       if(!DataManager.getModrole(event.getGuild().getLongID()).contains(role.getLongID())) {
         DataManager.setModrole(event.getGuild().getLongID(), role.getLongID());
-        Util.sendMessage(event.getChannel(), "**>Added bot moderator role: *" + role.getName() + "*.**");
+        Util.sendMessage(event, "**>Added bot moderator role: *" + role.getName() + "*.**");
       }else{
         DataManager.removeModr(event.getGuild().getLongID(), role.getLongID());
-        Util.sendMessage(event.getChannel(), "**>Removed bot moderator role: *" + role.getName() + "*.**");
+        Util.sendMessage(event, "**>Removed bot moderator role: *" + role.getName() + "*.**");
       }
     } else {
-      Util.sendMessage(event.getChannel(),
+      Util.sendMessage(event,
           "**>Error: you dont have permission to edit the bot settings.**");
     }
   }
@@ -218,13 +218,13 @@ public class Moderation {
     warnings.removeIf(a -> a.cleared);
     if (DataManager.getBanp(event.getGuild().getLongID()) != -1
         && warnings.size() >= DataManager.getBanp(event.getGuild().getLongID())) {
-      Util.sendMessage(event.getChannel(), "**Banned *" + event.getGuild().getUserByID(user)
+      Util.sendMessage(event, "**Banned *" + event.getGuild().getUserByID(user)
           + "* because they reached the warning limit.**");
       event.getGuild().banUser(event.getGuild().getUserByID(user), "Banned '" + event.getGuild().getUserByID(user)
         + "' because they reached the warning limit.");
     } else if (DataManager.getKickp(event.getGuild().getLongID()) != -1
         && warnings.size() >= DataManager.getKickp(event.getGuild().getLongID())) {
-      Util.sendMessage(event.getChannel(), "**Kicked *" + event.getGuild().getUserByID(user)
+      Util.sendMessage(event, "**Kicked *" + event.getGuild().getUserByID(user)
           + "* because they reached the warning limit.**");
       event.getGuild().kickUser(event.getGuild().getUserByID(user), "Kicked '" + event.getGuild().getUserByID(user)
         + "' because they reached the warning limit.");

@@ -8,18 +8,21 @@
 		"modr": "modr [role]\n\nAdds a role to the pool of roles which can manage the bot settings on this server, if no role is provided it lists all moderation roles. (ex: modr Admins)",
 		"rule": "rule commandName allow/deny channel (and or) role\n\nAllows or denies a commands usage in that channel and or role, which ever is specified. (ex: rule say deny general), (ex: rule say allow general staff)",
 		"roleids": "roleids\n\nPrints out all role names with their respective IDs. It's safer to use IDs rather than textual names of roles or channels.",
-		"backuppins": "backuppins [channelName]\n\nIt will save pins in a specified channel, or create a new one called Pins if no channel name is given.",
+		"backuppins": "backuppins [channelName]\n\nIf this feature is enabled, once a channel has more than ~40 pins it will save the oldest pins in a specified channel, or create a new one called Pins if no channel name is given.",
 		"ruler": "ruler [number] [number]\n\nDisplays all rules in the server, removes a rule if one number is specified and swaps two rules if two numbers are specified. (ex: ruler 1)",
-		"kick": "kick @user [reason]\n\nKicks the tagged user with the given reason",
-		"ban": "ban @user [reason]\n\nbans the tagged user with the given reason."
+		"kick": "kick @user [reason]\n\nKicks the tagged user with the given reason. (ex: kick @jarza succs)",
+		"ban": "ban @user [reason]\n\nBans the tagged user with the given reason. (ex: ban @jarza he didn't gib me succ)",
+		"quote": "quote messageID\n\nShows the message with that ID. (ex: j.quote 376046836278099968)"
 	},
 	"Fun": {
 		"meme": "meme [@user]\n\nGets one of the saved quotes for that guild, or a user if one is specified. (ex: meme @jarza)",
 		"say": "say text\n\nThe bot will say that text and delete the commanders message. (ex: say I am autonomous. Robots will rise.)",
 		"satansbae": "satansbae\n\nThe bot will quote some spicy Omar Varela lyrics.",
-		"dating": "dating\n\nGenerates a dating advert."
+		"dating": "dating\n\nGenerates a dating advert.",
+		"ud": "ud [word or phrase]\n\nYou don't know what some word means? Look it up on urban dictionary. (ex: ud 4chan)"
 	}, 
 	"Utility": {
-		"invite": "invite\n\nShares the bot invite link if you want to invite Jarzu to your own server."
+		"invite": "invite\n\nShares the bot invite link if you want to invite Jarzu to your own server.",
+		"disable": "disable [serverid]\n\nIf the bot can't respond to you in the channel you used a command in, it will, depending on the server's settings, respond to you either in the selected bot commands channel OR in the DMs. You can disable getting the DM by running the command it will tell you directly in the DMs, or in any server with Jarzu in it"
 	}
 }

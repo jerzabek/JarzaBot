@@ -2,8 +2,11 @@ package commands.memes;
 
 import commands.ChatCommands;
 import db.DataManager;
-import main.MainBot;
 import main.Util;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.DiscordException;
@@ -17,6 +20,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.*;
 
 public class MemeCL {
@@ -49,14 +53,7 @@ public class MemeCL {
           }else {
             EmbedBuilder builder = new EmbedBuilder();
             builder.appendField("No memes available for that user", "¯\\_(ツ)_/¯", false);
-            RequestBuffer.request(() -> {
-              try {
-                event.getChannel().sendMessage(builder.build());
-              } catch (DiscordException e) {
-                System.err.println("Hmmm shit went sideways... Here's why: ");
-                e.printStackTrace();
-              }
-            });
+            Util.sendMessage(event, builder.build());
             return;
           }
         }
@@ -71,14 +68,7 @@ public class MemeCL {
           if(event.getGuild().getUserByID(meme.user) == null) {
             builder.appendField("No memes available for that user",
               "¯\\_(ツ)_/¯", false);
-            RequestBuffer.request(() -> {
-              try {
-                event.getChannel().sendMessage(builder.build());
-              } catch (DiscordException e) {
-                System.err.println("Hmmm shit went sideways... Here's why: ");
-                e.printStackTrace();
-              }
-            });
+            Util.sendMessage(event, builder.build());
             return;
           }else {
             username = event.getGuild().getUserByID(meme.user).getName();
@@ -90,14 +80,7 @@ public class MemeCL {
         }else{
           builder.appendField("No memes available for that user",
             "¯\\_(ツ)_/¯", false);
-          RequestBuffer.request(() -> {
-            try {
-              event.getChannel().sendMessage(builder.build());
-            } catch (DiscordException e) {
-              System.err.println("Hmmm shit went sideways... Here's why: ");
-              e.printStackTrace();
-            }
-          });
+          Util.sendMessage(event, builder.build());
           return;
         }
 
@@ -106,26 +89,12 @@ public class MemeCL {
         builder.withFooterText(timestamp);
         builder.withColor(new Color(112, 137, 255));
         //      Util.sendMessage(event.getChannel(), msg);
-        RequestBuffer.request(() -> {
-          try {
-            event.getChannel().sendMessage(builder.build());
-          } catch (DiscordException e) {
-            System.err.println("Hmmm shit went sideways... Here's why: ");
-            e.printStackTrace();
-          }
-        });
+        Util.sendMessage(event, builder.build());
       }else{
         EmbedBuilder builder = new EmbedBuilder();
         builder.appendField("No memes available",
           "¯\\_(ツ)_/¯", false);
-        RequestBuffer.request(() -> {
-          try {
-            event.getChannel().sendMessage(builder.build());
-          } catch (DiscordException e) {
-            System.err.println("Hmmm shit went sideways... Here's why: ");
-            e.printStackTrace();
-          }
-        });
+        Util.sendMessage(event, builder.build());
       }
     });
 
@@ -188,18 +157,86 @@ public class MemeCL {
       }
 
       final InputStream image = is;
-      RequestBuffer.request(() -> {
-        try {
-          event.getChannel().sendFile("", image, "lol.jpg");
-        } catch (DiscordException e) {
-          System.err.println("Hmmm shit went sideways... Here's why: ");
-          e.printStackTrace();
-        }
-      });
+      Util.sendMessage(event, "", image, "lol.jpg");
     });
 
     ChatCommands.commandMap.put("maymay", (event, args) -> {
-      Util.sendMessage(event.getChannel(), "maymaysss #ripmira #neverforgetti");
+      Util.sendMessage(event, "maymaysss #ripmira #neverforgetti");
+    });
+
+    ChatCommands.commandMap.put("ud", (event, args) -> {
+      if(args.isEmpty())
+        return;
+
+      String tx = "";
+
+      for(String a : args)
+        tx += a;
+
+      URL url = null;
+
+      try {
+        String stuff = "http://api.urbandictionary.com/v0/define?term=" + URLEncoder.encode(tx, "UTF-8");
+//        System.out.println(stuff + " / " + tx);
+        url = new URL(stuff);
+      } catch (MalformedURLException e) {
+        e.printStackTrace();
+      } catch (UnsupportedEncodingException e) {
+        e.printStackTrace();
+      }
+
+      URLConnection conn = null;
+      try {
+        conn = url.openConnection();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      BufferedReader reader = null;
+      try {
+        reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      JSONParser jsonParser = new JSONParser();
+      JSONObject jsonObject = null;
+      try {
+        jsonObject = (JSONObject) jsonParser.parse(reader);
+      } catch (IOException e) {
+        e.printStackTrace();
+      } catch (ParseException e) {
+        e.printStackTrace();
+      }
+
+      try {
+        reader.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      JSONArray listObject = (JSONArray) jsonObject.get("list");
+
+      JSONObject firstResult;
+      EmbedBuilder e = new EmbedBuilder();
+
+      if (listObject.isEmpty()) {
+        e.appendField("Sorry, couldn't find anything",
+          "¯\\_(ツ)_/¯", false);
+        e.withFooterText("UrbanDictionary brought to you by JarzaBot");
+        Util.sendMessage(event, e.build());
+        return;
+      }
+
+      firstResult = (JSONObject) listObject.get(0);
+
+
+
+//      System.out.println(firstResult.toJSONString());
+
+      e.appendField(firstResult.get("word").toString(),firstResult.get("definition").toString(), false);
+      e.withFooterText("UrbanDictionary brought to you by JarzaBot");
+      Util.sendMessage(event, e.build());
     });
   }
 

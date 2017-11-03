@@ -6,6 +6,7 @@ import commands.memes.Meme;
 import commands.moderation.Moderation;
 import db.DataManager;
 import exceptions.InvalidMemeException;
+import org.json.simple.JSONObject;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.impl.events.guild.GuildCreateEvent;
@@ -15,6 +16,7 @@ import sx.blah.discord.handle.impl.events.shard.DisconnectedEvent;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.EmbedBuilder;
+import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RequestBuffer;
 
 import java.util.ArrayList;
@@ -55,17 +57,24 @@ public class ChatEvents {
     ArrayList<String> args = new ArrayList<String>(Arrays.asList(msg));
     args.remove(0);
 
-
     if (msg.length == 0)
       return;
     try {
-      if (ChatCommands.commandMap.containsKey(command) && (Moderation.hasPermission(command, event.getAuthor(), event.getGuild().getLongID(), event.getChannel().getLongID()))) {
-        if (!Util.gmode) {
-          ChatCommands.commandMap.get(command).run(event, args);
-        } else if (event.getAuthor().getLongID() == Util.jarza) {
-          ChatCommands.commandMap.get(command).run(event, args);
+      if (ChatCommands.commandMap.containsKey(command)) {
+        boolean t = true;
+        if(event.getGuild() != null){
+          if(!(Moderation.hasPermission(command, event.getAuthor(), event.getGuild().getLongID(), event.getChannel().getLongID()))){
+            t = false;
+          }
         }
-        Util.totcom++;
+        if(t) {
+          if (!Util.gmode) {
+            ChatCommands.commandMap.get(command).run(event, args);
+          } else if (event.getAuthor().getLongID() == Util.jarza) {
+            ChatCommands.commandMap.get(command).run(event, args);
+          }
+          Util.totcom++;
+        }
       }else if(ChatCommands.adminMap.containsKey(command)){
         if (event.getAuthor().getLongID() == Util.jarza) {
           ChatCommands.adminMap.get(command).run(event, args);
@@ -74,7 +83,7 @@ public class ChatEvents {
       }
     }catch (Throwable e){
       e.printStackTrace();
-      Util.sendMessage(event.getChannel(), e.toString());
+      Util.sendMessage(event, e.toString());
     }
   }
 

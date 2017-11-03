@@ -18,6 +18,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 
 /**
@@ -38,7 +39,7 @@ public class DataManager {
   public final static String SETTINGS = "settings.json", MEMES = "memes.json", WARNS = "warnings.json";
   public static JSONObject settings, warns;
   public static JSONArray memes;
-  public static JSONObject newSettingsObj, newWarningObject;
+  public static JSONObject newSettingsObj, botchanObj;
 
   /**
    * Initializes the data arrays and default objects
@@ -59,13 +60,17 @@ public class DataManager {
       sets.put(Setting.MODR,  new JSONArray());
       sets.put(Setting.PINCHAN, -1);
 
+      botchanObj = new JSONObject();
+      botchanObj.put(Setting.CHANID, -2);
+      botchanObj.put(Setting.EXCP, new JSONArray());
+
+      sets.put(Setting.BOTCHAN, botchanObj);
+
       JSONArray newperms = new JSONArray();
 //      newperms.add("default;allow;0;0;0");
 
       newSettingsObj.put(Setting.SETTINGSF, sets);
       newSettingsObj.put(Setting.PERMSF, newperms);
-
-      newSettingsObj = new JSONObject();
 
     } catch (Throwable e) {
       e.printStackTrace();
@@ -536,7 +541,7 @@ public class DataManager {
    * @return {@link IChannel channel} id
    */
   public static Long getPinbu(Long guildid) {
-    Long c;
+    Long c = -1L;
 
     if(!settings.containsKey(guildid.toString())){
       settings.put(guildid.toString(), newSettingsObj);
@@ -545,8 +550,11 @@ public class DataManager {
     JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
     JSONObject sets = (JSONObject) sets4g.get(Setting.SETTINGSF);
 
-    c = (Long) sets.get(Setting.PINCHAN);
-
+    try {
+      c = Long.parseLong(sets.get(Setting.PINCHAN).toString());
+    }catch (NumberFormatException e){
+      
+    }
     return c;
   }
 
@@ -564,6 +572,80 @@ public class DataManager {
     sets.put(Setting.PINCHAN, id);
     sets4g.put(Setting.SETTINGSF, sets);
     settings.put(guildid, sets4g);
+  }
+
+  public static Long getBotComChan(Long guildid){
+    if(!settings.containsKey(guildid.toString())){
+      settings.put(guildid.toString(), newSettingsObj);
+    }
+    Long ret = -1L;
+    JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
+    JSONObject sets = (JSONObject) sets4g.get(Setting.SETTINGSF);
+    JSONObject botchan = (JSONObject) sets.get(Setting.BOTCHAN);
+    try {
+      ret = Long.parseLong(botchan.get(Setting.CHANID).toString());
+    }catch(NumberFormatException e){
+
+    }
+    return ret;
+  }
+
+  public static Long getBotComChan(Long guildid, Long userid){
+    if(!settings.containsKey(guildid.toString())){
+      settings.put(guildid.toString(), newSettingsObj);
+    }
+    Long ret = -1L;
+    JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
+    JSONObject sets = (JSONObject) sets4g.get(Setting.SETTINGSF);
+    JSONObject botchan = (JSONObject) sets.get(Setting.BOTCHAN);
+    try {
+      ret = Long.parseLong(botchan.get(Setting.CHANID).toString());
+    }catch(NumberFormatException e){}
+
+    if(ret == -1L){
+      JSONArray l = (JSONArray) botchan.get(Setting.EXCP);
+      ret = userid;
+      for(Object a : l){
+        if(a.equals(userid))
+          ret = -1L;
+
+//        System.out.println(a + " & " + userid);
+      }
+    }
+
+    System.out.println("dis is " + ret);
+    return ret;
+  }
+
+  public static void setBotComChan(Long guildid, Long channelid){
+    if(!settings.containsKey(guildid.toString())){
+      settings.put(guildid.toString(), newSettingsObj);
+    }
+
+    JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
+    JSONObject sets = (JSONObject) sets4g.get(Setting.SETTINGSF);
+
+    sets.put(Setting.BOTCHAN, channelid);
+    sets4g.put(Setting.SETTINGSF, sets);
+    settings.put(guildid.toString(), sets4g);
+  }
+
+  public static void setUserNotifi(Long guildid, Long userid){
+    if(!settings.containsKey(guildid.toString())){
+      settings.put(guildid.toString(), newSettingsObj);
+    }
+
+    JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
+    JSONObject sets = (JSONObject) sets4g.get(Setting.SETTINGSF);
+    JSONObject botch = (JSONObject) sets.get(Setting.BOTCHAN);
+    JSONArray l = (JSONArray) botch.get(Setting.EXCP);
+
+    l.add(userid);
+
+    botch.put(Setting.EXCP, l);
+    sets.put(Setting.BOTCHAN, botch);
+    sets4g.put(Setting.SETTINGSF, sets);
+    settings.put(guildid.toString(), sets4g);
   }
 
   /**

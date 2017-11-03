@@ -1,5 +1,6 @@
 package commands;
 
+import commands.moderation.Moderation;
 import commands.moderation.Permission;
 import db.DataManager;
 import main.MainBot;
@@ -30,11 +31,11 @@ public class ChatCommands {
         }
       }
       if (!cont) {
-        Util.sendMessage(event.getChannel(), "**>Error: inssuficient permission**");
+        Util.sendMessage(event, "**>Error: inssuficient permission**");
         return;
       }
       if(DataManager.getPerms(event.getGuild().getLongID()).size() >= 25) {
-        Util.sendMessage(event.getChannel(), "Error: you can only have up to 25 permissions.");
+        Util.sendMessage(event, "Error: you can only have up to 25 permissions.");
         return;
       }
       if(args.isEmpty())
@@ -48,7 +49,7 @@ public class ChatCommands {
 
     ChatCommands.adminMap.put("logoff", (event, args) -> {
       if (event.getAuthor().getLongID() == Util.jarza) {
-        Util.sendMessage(event.getChannel(), "Turning off...");
+        Util.sendMessage(event, "Turning off...");
         RequestBuffer.request(() -> MainBot.cli.logout());
         DataManager.finish();
         System.exit(0);
@@ -59,15 +60,15 @@ public class ChatCommands {
       if (event.getAuthor().getLongID() == Util.jarza) {
         Util.gmode = !Util.gmode;
         if (Util.gmode) {
-          Util.sendMessage(event.getChannel(), "GodMode On - Only jaja can do commands now hehehe");
+          Util.sendMessage(event, "GodMode On - Only jaja can do commands now hehehe");
         } else {
-          Util.sendMessage(event.getChannel(), "GodMode Off - *just don't spam too much pls*");
+          Util.sendMessage(event, "GodMode Off - *just don't spam too much pls*");
         }
       }
     });
 
     ChatCommands.commandMap.put("invite", (event, args) -> {
-      Util.sendMessage(event.getChannel(), "Invite link for Jarzu botto: " + Util.link);
+      Util.sendMessage(event, "Invite link for Jarzu botto: " + Util.link);
     });
 
     ChatCommands.adminMap.put("game", (MessageReceivedEvent event, List<String> args) -> {
@@ -77,14 +78,14 @@ public class ChatCommands {
           for (Object a : args.toArray()) {
             text += " " + a;
           }
-          Util.sendMessage(event.getChannel(), "Changed game status to: " + text);
+          Util.sendMessage(event, "Changed game status to: " + text);
           MainBot.cli.changePlayingText(text);
         }
       }
     });
 
     commandMap.put("ping", (event, args) -> {
-      Util.sendMessage(event.getChannel(), "pong");
+      Util.sendMessage(event, "pong");
     });
 
     commandMap.put("info", (event, args) -> {
@@ -97,7 +98,7 @@ public class ChatCommands {
       builder.withFooterText("Still under development! uwu");
       builder.withThumbnail(MainBot.cli.getOurUser().getAvatarURL());
 
-      RequestBuffer.request(() -> event.getChannel().sendMessage(builder.build()));
+      Util.sendMessage(event, builder.build());
     });
 
     commandMap.put("help", (event, args) -> {
@@ -119,7 +120,7 @@ public class ChatCommands {
           }
           builder.appendField(a, comms, false);
         }
-        RequestBuffer.request(() -> event.getChannel().sendMessage(builder.build()));
+        Util.sendMessage(event, builder.build());
       }else if(args.size() == 1){
         builder.appendField("Prefix: " + Util.prefix, String.format("Version %1$s", Util.version),
           true);
@@ -141,7 +142,7 @@ public class ChatCommands {
           return;
 
         builder.appendField(cmd, info, false);
-        RequestBuffer.request(() -> event.getChannel().sendMessage(builder.build()));
+        Util.sendMessage(event, builder.build());
       }
     });
 
@@ -157,11 +158,11 @@ public class ChatCommands {
       builder.withThumbnail(
           "https://cdn.discordapp.com/avatars/218787234910961665/34d21653c66436b94c2af78b30156e91.webp?size=64");
 
-      RequestBuffer.request(() -> event.getChannel().sendMessage(builder.build()));
+      Util.sendMessage(event, builder.build());
 //      MainBot.cli.changeAvatar(Image.forFile(new File("gfx/drawing.png")));
     });
 
-    commandMap.put("say", (event, args) -> {
+    commandMap.put("say", (MessageReceivedEvent event, List<String> args) -> {
       String text = "";
       {
         String t = "";
@@ -177,14 +178,28 @@ public class ChatCommands {
         }
       }
       System.out.println(event.getAuthor().getName() + " said: " + text);
-      event.getMessage().delete();
-      Util.sendMessage(event.getChannel(), text);
+      if(event.getGuild() != null)
+        event.getMessage().delete();
+
+      Util.sendMessage(event, text);
     });
 
     commandMap.put("satansbae", (event, args) -> {
       String song =
           "*Archangel*\n*Darkangel*\n*Bring us elevation*\n*Through hell and through heaven*\n***Until we reach ascention***";
-      RequestBuffer.request(() -> event.getChannel().sendMessage(song));
+      Util.sendMessage(event, song);
+    });
+
+    commandMap.put("disable", (event, args) -> {
+      if(args.isEmpty())
+        return;
+
+      Long g;
+      try{
+        g = Long.parseLong(args.get(0));
+      }catch(NumberFormatException e){return;}
+
+      DataManager.setUserNotifi(g, event.getAuthor().getLongID());
     });
   }
 
