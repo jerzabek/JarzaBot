@@ -8,3 +8,5 @@ memes.json
 settings.json
 warnings.json
 modules/
+lib/
+lavasrc/

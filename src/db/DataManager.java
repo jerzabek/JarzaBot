@@ -7,10 +7,12 @@ import commands.moderation.Setting;
 import commands.moderation.Warning;
 import exceptions.InvalidMemeException;
 import exceptions.InvalidWarningException;
+import main.MainBot;
 import main.Util;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import sun.applet.Main;
 import sx.blah.discord.handle.obj.IChannel;
 
 import java.io.FileReader;
@@ -640,7 +642,10 @@ public class DataManager {
     JSONObject botch = (JSONObject) sets.get(Setting.BOTCHAN);
     JSONArray l = (JSONArray) botch.get(Setting.EXCP);
 
-    l.add(userid);
+    if(!l.contains(userid))
+      l.add(userid);
+    else
+      l.remove(userid);
 
     botch.put(Setting.EXCP, l);
     sets.put(Setting.BOTCHAN, botch);
@@ -667,9 +672,13 @@ public class DataManager {
 //        fw.flush();
 //        fw.close();
 //        fw = new FileWriter("config.json");
-//        JSONObject temp = (JSONObject) new JSONParser().parse(new FileReader("config.json"));
-//        temp.put("cmds", Integer.parseInt((String)temp.get("cmds")) + Util.totcom);
-//        fw.write(temp.toJSONString());
+//        fw.write(MainBot.config.toJSONString());
+        fw.flush();
+        fw.close();
+        fw = new FileWriter("config.json");
+        Long a = (Long) MainBot.config.get("commands");
+        MainBot.config.put("commands", a + Util.totcom);
+        fw.write(MainBot.config.toJSONString());
       } catch (Throwable e) {
         e.printStackTrace();
       } finally {

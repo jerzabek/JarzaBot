@@ -1,15 +1,21 @@
 package commands;
 
-import commands.moderation.Moderation;
 import commands.moderation.Permission;
 import db.DataManager;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
 import main.MainBot;
 import main.Util;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.util.EmbedBuilder;
 import sx.blah.discord.util.RequestBuffer;
 
+import javax.xml.crypto.Data;
 import java.awt.*;
+import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,14 +90,12 @@ public class ChatCommands {
       }
     });
 
-    commandMap.put("ping", (event, args) -> {
-      Util.sendMessage(event, "pong");
-    });
-
     commandMap.put("info", (event, args) -> {
       EmbedBuilder builder = new EmbedBuilder();
 
       builder.appendField("Jarza Bot!", String.format("Version %1$s", Util.version), true);
+      builder.appendField("Commands used so far:", "" + Util.totcom, true);
+      builder.appendField("How many servers have me?", MainBot.cli.getGuilds().size() + " so far!", true);
       builder.withAuthorName(event.getAuthor().getName());
       builder.withColor(new Color(112, 137, 255));
       builder.withAuthorIcon(event.getAuthor().getAvatarURL());
@@ -146,26 +150,10 @@ public class ChatCommands {
       }
     });
 
-    ChatCommands.commandMap.put("test", (event, args) -> {
-      EmbedBuilder builder = new EmbedBuilder();
-
-      builder.appendField("Test command!", String.format("Version %1$s", Util.version), true);
-      builder.appendField("Commands used:", Util.totcom + "", false);
-      builder.withColor(100, 255, 199);
-      builder.withAuthorName(event.getAuthor().getName());
-      builder.withAuthorIcon(event.getAuthor().getAvatarURL());
-      builder.withFooterText("Still under development! uwu");
-      builder.withThumbnail(
-          "https://cdn.discordapp.com/avatars/218787234910961665/34d21653c66436b94c2af78b30156e91.webp?size=64");
-
-      Util.sendMessage(event, builder.build());
-//      MainBot.cli.changeAvatar(Image.forFile(new File("gfx/drawing.png")));
-    });
-
     commandMap.put("say", (MessageReceivedEvent event, List<String> args) -> {
       String text = "";
       {
-        String t = "";
+        String t;
         int counter = 0;
         for (Object a : args.toArray()) {
           counter++;
@@ -200,6 +188,10 @@ public class ChatCommands {
       }catch(NumberFormatException e){return;}
 
       DataManager.setUserNotifi(g, event.getAuthor().getLongID());
+    });
+
+    adminMap.put("write", (event, args) -> {
+      MainBot.writer.run();
     });
   }
 
