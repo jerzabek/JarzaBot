@@ -14,17 +14,24 @@
             <name>bintray</name>
             <url>http://jcenter.bintray.com</url>
         </repository>
-    <repositories>
+		
 		<repository>
 		    <id>jitpack.io</id>
 		    <url>https://jitpack.io</url>
 		</repository>
 	</repositories>
+	
     <dependencies>
         <dependency>
             <groupId>com.sedmelluq</groupId>
             <artifactId>lavaplayer</artifactId>
             <version>1.2.42</version>
         </dependency>
+		<dependency>
+			<groupId>com.github.austinv11</groupId>
+			<artifactId>Discord4J</artifactId>
+			<version>@VERSION@</version>
+		   <!-- <classifier>shaded</classifier> <!-- Include this line if you want a shaded jar (all the Discord4J dependencies bundled into one jar)-->
+		</dependency>
     </dependencies>
 </project>
