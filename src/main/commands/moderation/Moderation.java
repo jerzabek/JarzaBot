@@ -1,7 +1,7 @@
 package main.commands.moderation;
 
 import main.db.DataManager;
-import main.exceptions.InvalidWarningException;
+import exceptions.InvalidWarningException;
 import main.MainBot;
 import main.Util;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;

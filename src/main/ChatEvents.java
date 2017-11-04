@@ -4,7 +4,7 @@ import main.commands.ChatCommands;
 import main.commands.memes.Meme;
 import main.commands.moderation.Moderation;
 import main.db.DataManager;
-import main.exceptions.InvalidMemeException;
+import exceptions.InvalidMemeException;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.impl.events.guild.GuildCreateEvent;
