@@ -33,5 +33,8 @@
 			<version>@VERSION@</version>
 		   <!-- <classifier>shaded</classifier> <!-- Include this line if you want a shaded jar (all the Discord4J dependencies bundled into one jar)-->
 		</dependency>
+		<groupId>com.github.jerzabek</groupId>
+	    <artifactId>JarzaBot</artifactId>
+	    <version>35fdb5103c</version>
     </dependencies>
 </project>
