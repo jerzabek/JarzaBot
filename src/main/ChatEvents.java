@@ -1,12 +1,10 @@
 package main;
 
-import commands.ChatCommand;
-import commands.ChatCommands;
-import commands.memes.Meme;
-import commands.moderation.Moderation;
-import db.DataManager;
-import exceptions.InvalidMemeException;
-import org.json.simple.JSONObject;
+import main.commands.ChatCommands;
+import main.commands.memes.Meme;
+import main.commands.moderation.Moderation;
+import main.db.DataManager;
+import main.exceptions.InvalidMemeException;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.impl.events.guild.GuildCreateEvent;
@@ -16,7 +14,6 @@ import sx.blah.discord.handle.impl.events.shard.DisconnectedEvent;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.EmbedBuilder;
-import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RequestBuffer;
 
 import java.util.ArrayList;

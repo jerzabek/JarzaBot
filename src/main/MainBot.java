@@ -1,9 +1,9 @@
 package main;
 
-import commands.ChatCommands;
-import commands.memes.MemeCL;
-import commands.moderation.ModerationCL;
-import db.DataManager;
+import main.commands.ChatCommands;
+import main.commands.memes.MemeCL;
+import main.commands.moderation.ModerationCL;
+import main.db.DataManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -55,9 +55,8 @@ public class MainBot {
           fw.flush();
           fw.close();
           fw = new FileWriter("config.json");
-          Long a = (Long) MainBot.config.get("commands");
-          MainBot.config.put("commands", a + Util.totcom);
-          cof.put("commands", a + Util.totcom);
+          MainBot.config.put("commands", Util.totcom);
+          cof.put("commands", Util.totcom);
           fw.write(MainBot.config.toJSONString());
         } catch (Throwable e) {
           e.printStackTrace();
@@ -89,8 +88,11 @@ public class MainBot {
     MemeCL.init();
     ModerationCL.init();
     DataManager.init();
-    cli.login();
+    try {
+      cli.login();
+    }catch (IllegalStateException e){
 
+    }
     //    cli.changePlayingText("my own creation");
     //    Database.loadData();
   }

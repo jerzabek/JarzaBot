@@ -1,17 +1,13 @@
 package main;
 
-import db.DataManager;
+import main.db.DataManager;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
-import sx.blah.discord.api.events.Event;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
-import sx.blah.discord.handle.impl.events.guild.GuildEvent;
-import sx.blah.discord.handle.impl.events.guild.channel.ChannelEvent;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageEvent;
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.MissingPermissionsException;
@@ -70,6 +66,22 @@ public class Util {
 
   public static String toTimeStamp(LocalDateTime a){
     return a.format(DateTimeFormatter.ofPattern("dd-MM-yyyy - HH:mm"));
+  }
+
+
+  /**
+   * wait dis is wip no use
+   * @param c
+   * @param msg
+   */
+  public static void sendMessage(IChannel c, String msg) {
+    RequestBuffer.request(() -> {
+      try {
+        c.sendMessage(msg);
+      } catch (Throwable e) {
+        e.printStackTrace();
+      }
+    });
   }
 
   public static void sendMessage(MessageEvent event, String msg) {
