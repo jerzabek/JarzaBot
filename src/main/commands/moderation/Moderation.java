@@ -1,9 +1,9 @@
 package main.commands.moderation;
 
-import main.db.DataManager;
 import exceptions.InvalidWarningException;
 import main.MainBot;
 import main.Util;
+import main.db.DataManager;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IRole;
@@ -26,7 +26,7 @@ public class Moderation {
             "Warned *" + event.getGuild().getUserByID(user).getName() + "#" + event.getGuild().getUserByID(user).getDiscriminator() + "* for *'" + reason + "'*.");
         checkStuff(user, reason, event);
       }else {
-        Util.sendMessage(event, "**Error: no punishments set, please do j.warnp *number* *(kick or ban)***");
+        Util.sendMessage(event, "**Error: no punishments set, please do warnp *number* *(kick or ban)***");
       }
     }
 
@@ -167,7 +167,7 @@ public class Moderation {
       }
     }else{
       Util.sendMessage(event,
-          "**>Error: bot editing permission has not been set up. Please run j.modr roleName**");
+          "**>Error: bot editing permission has not been set up. Please run modr roleName**");
       return;
     }
 
@@ -231,6 +231,10 @@ public class Moderation {
 
   public static boolean hasPermission(String command, IUser user, Long guildid, Long channelid){
     boolean has = true;
+    if(Util.botAdmins.contains(user.getLongID())){
+      return true;
+    }
+
     for(Permission p : DataManager.getPerms(guildid)){
       if(p.command.equals(command) || (Util.catnames.contains(p.command) && Util.cats.get(p.command).containsKey(command))) {
         if (p.channel != 0 || p.role != 0){
@@ -244,6 +248,14 @@ public class Moderation {
         }
       }
     }
+    if (DataManager.getBotComChan(guildid) != -1L && DataManager.getBotComChan(guildid) != -2L) {
+      if(!has)
+        if (!channelid.equals(DataManager.getBotComChan(guildid)) && guildid.equals(MainBot.cli.getChannelByID(DataManager.getBotComChan(guildid)).getGuild().getLongID())) {
+          Util.sendMessage(MainBot.cli.getChannelByID(DataManager.getBotComChan(guildid)), user + " Hey I can't respond  to you in " + MainBot.cli.getChannelByID(channelid) + " so do your thing in here, aight?");
+          return false;
+        }
+    }
+
     return has;
   }
   @Deprecated

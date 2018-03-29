@@ -9,10 +9,10 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import sx.blah.discord.api.IDiscordClient;
-
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 public class MainBot {
   public static IDiscordClient cli;
@@ -24,17 +24,26 @@ public class MainBot {
     // if (args.length != 1) {
     // System.out.println("Pls token: java -jar thisjar.jar tokenhere");
     // return;
-    // }
+    // }F
+//    try {
+//      PrintStream out = new PrintStream(new FileOutputStream("log.txt", true));
+//      System.setOut(out);
+//      System.setErr(new PrintStream(new FileOutputStream("errlog.txt", true)));
+//    } catch (FileNotFoundException e) {
+//      e.printStackTrace();
+//    }
     writer = new Thread(null, () -> {
       JSONObject sets;
       JSONObject war;
       JSONArray me;
       JSONObject cof;
+      JSONArray glmem;
       try {
         sets = (JSONObject) (new JSONParser().parse(DataManager.settings.toJSONString()));
         war = (JSONObject) (new JSONParser().parse(DataManager.warns.toJSONString()));
         me = (JSONArray) (new JSONParser().parse(DataManager.memes.toJSONString()));
         cof = (JSONObject) (new JSONParser().parse(MainBot.config.toJSONString()));
+        glmem = (JSONArray) (new JSONParser().parse(DataManager.globalmemes.toJSONString()));
       } catch (ParseException e) {
         e.printStackTrace();
         return;
@@ -55,9 +64,16 @@ public class MainBot {
           fw.flush();
           fw.close();
           fw = new FileWriter("config.json");
-          MainBot.config.put("commands", Util.totcom);
           cof.put("commands", Util.totcom);
-          fw.write(MainBot.config.toJSONString());
+          fw.write(cof.toJSONString());
+          fw.flush();
+          fw.close();
+          fw = new FileWriter(DataManager.GLMEMES);
+          fw.write(glmem.toJSONString());
+          fw.flush();
+          fw.close();
+          fw = new FileWriter(DataManager.PREMIUMS);
+          fw.write(DataManager.premiums.toJSONString());
         } catch (Throwable e) {
           e.printStackTrace();
         } finally {
@@ -77,10 +93,19 @@ public class MainBot {
     }
     Util.jarza = Long.parseLong((String) config.get("owner"));
     String token = (String) config.get("key");
+//    String token = "MzAxMDE3NzUwNTAxODUxMTM3.DTVKNA.aw0AsfeU6akAi4roDlveuHLZo2k";
     Util.totcom = Integer.parseInt(config.get("commands") + "");
     cli = Util.getBuiltDiscordClient(token); // args[0]
 
     cli.getDispatcher().registerListener(new ChatEvents());
+
+//    Timer t = new Timer();
+//
+//    t.schedule(new TimerTask() {
+//      @Override public void run() {
+//        MainBot.writer.run();
+//      }
+//    }, 5000L, TimeUnit.MINUTES.toMillis(10L));
 
     // Only login after all events are registered otherwise some may be missed.
     Util.init();
@@ -90,7 +115,7 @@ public class MainBot {
     DataManager.init();
     try {
       cli.login();
-    }catch (IllegalStateException e){
+    } catch (IllegalStateException e) {
 
     }
     //    cli.changePlayingText("my own creation");

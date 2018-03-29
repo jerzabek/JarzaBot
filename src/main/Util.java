@@ -1,14 +1,18 @@
 package main;
 
 import main.db.DataManager;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
+import sx.blah.discord.api.events.Event;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageEvent;
+import sx.blah.discord.handle.impl.events.guild.member.GuildMemberEvent;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RequestBuffer;
@@ -22,28 +26,47 @@ import java.util.*;
 
 public class Util {
 
-  public static String prefix = "j.";
+  public static String prefix = "h!";
   public static List<Long> botAdmins;
-  public static double version = 0.15;
+  public static double version = 0.17;
   private static int cnum = 10;
   private static JSONObject commands;
   public static String COMMANDS = "commands.json";
   public static List<String> catnames;
   public static HashMap<String, HashMap<String, String>> cats;
   public static int totcom = 0;
+  public static ArrayList<String> premcoms;
   public static String link =
-      "https://discordapp.com/oauth2/authorize?client_id=334665490612092929&scope=bot&permissions=1610083446";
+      "https://discordapp.com/api/oauth2/authorize?client_id=398878661953978368&permissions=2146954486&scope=bot";
   public static boolean gmode = true;
   public static Long jarza = 0l;
 
   public static void init() {
     try {
       commands = (JSONObject) (new JSONParser().parse(new FileReader(COMMANDS)));
+      JSONArray adm = (JSONArray) MainBot.config.get("admins");
+      botAdmins = new ArrayList<>();
+      for(Object i : adm){
+        botAdmins.add(Long.parseLong(i.toString()));
+      }
     } catch (IOException e) {
       e.printStackTrace();
     } catch (ParseException e) {
       e.printStackTrace();
     }
+    premcoms = new ArrayList<>();
+    premcoms.add("convert");
+    premcoms.add("premium");
+    premcoms.add("discrim");
+    premcoms.add("ar");
+    premcoms.add("p");
+    premcoms.add("q");
+    premcoms.add("qr");
+    premcoms.add("leave");
+    premcoms.add("playing");
+    premcoms.add("join");
+    premcoms.add("skip");
+
     catnames = new ArrayList<>();
     cats = new HashMap<>();
     for(Object a : commands.keySet()){
@@ -74,118 +97,157 @@ public class Util {
    * @param c
    * @param msg
    */
-  public static void sendMessage(IChannel c, String msg) {
-    RequestBuffer.request(() -> {
+  public static IMessage sendMessage(IChannel c, String msg) {
+    return RequestBuffer.request(() -> {
       try {
-        c.sendMessage(msg);
+        return c.sendMessage(msg);
       } catch (Throwable e) {
         e.printStackTrace();
+        return null;
       }
-    });
+    }).get();
   }
 
-  public static void sendMessage(MessageEvent event, String msg) {
-    RequestBuffer.request(() -> {
+  public static IMessage sendMessage(MessageEvent event, String msg) {
+    return RequestBuffer.request(() -> {
       try {
-        event.getChannel().sendMessage(msg);
+        return event.getChannel().sendMessage(msg);
       } catch(MissingPermissionsException e) {
         if (DataManager.getBotComChan(event.getGuild().getLongID()) != -2L) {
           if (DataManager.getBotComChan(event.getGuild().getLongID()) == -1L) {
             if (DataManager.getBotComChan(event.getGuild().getLongID(), event.getAuthor().getLongID()) != -1L) {
-              RequestBuffer.request(() -> MainBot.cli.getOrCreatePMChannel(event.getAuthor()).sendMessage(
+              MainBot.cli.getOrCreatePMChannel(event.getAuthor()).sendMessage(
                 "Hey, would you mind telling the staff in `" + event.getGuild().getName() + "` that I can't respond to you in " + event.getChannel()
-                  + " because I am missing message sending perms. Thank you! ;D\np.s. if you don't want this notification just respond with `j.disable " + event.getGuild().getLongID() + "`"));
+                  + " because I am missing message sending perms. Thank you! ;D\np.s. if you don't want this notification just respond with `" + prefix + "disable " + event.getGuild().getLongID() + "`");
             }
           } else {
-            RequestBuffer.request(() -> event.getGuild().getChannelByID(DataManager.getBotComChan(event.getGuild().getLongID()))
-              .sendMessage(event.getAuthor() + " Hey I can't respond to you in " + event.getChannel() + " so do your thing in here, aight?"));
+            event.getGuild().getChannelByID(DataManager.getBotComChan(event.getGuild().getLongID()))
+              .sendMessage(event.getAuthor() + " Hey I can't respond to you in " + event.getChannel() + " so do your thing in here, aight?");
           }
         }
+        return null;
       }catch (DiscordException e) {
         System.err.println("Couldn't send message. Here's why:");
         e.printStackTrace();
+        return null;
       }
-    });
+    }).get();
   }
 
-  public static void sendMessage(MessageEvent event, EmbedObject msg) {
-    RequestBuffer.request(() -> {
+  public static IMessage sendMessage(MessageEvent event, EmbedObject msg) {
+    return RequestBuffer.request(() -> {
       try {
-        event.getChannel().sendMessage(msg);
+        return event.getChannel().sendMessage(msg);
       } catch(MissingPermissionsException e) {
         if (DataManager.getBotComChan(event.getGuild().getLongID()) != -2L) {
           if (DataManager.getBotComChan(event.getGuild().getLongID()) == -1L) {
             if (DataManager.getBotComChan(event.getGuild().getLongID(), event.getAuthor().getLongID()) != -1L) {
 //              System.out.println(DataManager.getBotComChan(event.getGuild().getLongID(), event.getAuthor().getLongID()));
-              RequestBuffer.request(() -> MainBot.cli.getOrCreatePMChannel(event.getAuthor()).sendMessage(
+              MainBot.cli.getOrCreatePMChannel(event.getAuthor()).sendMessage(
                 "Hey, would you mind telling the staff in `" + event.getGuild().getName() + "` that I can't respond to you in " + event.getChannel()
-                  + " because I am missing message sending perms. Thank you! ;D\np.s. if you don't want this notification just respond with `j.disable " + event.getGuild().getLongID() + "`"));
+                  + " because I am missing message sending perms. Thank you! ;D\np.s. if you don't want this notification just respond with `" + prefix + "disable " + event.getGuild().getLongID() + "`");
             }
           } else {
-            RequestBuffer.request(() -> event.getGuild().getChannelByID(DataManager.getBotComChan(event.getGuild().getLongID()))
-              .sendMessage(event.getAuthor() + " Hey I can't respond to you in " + event.getChannel() + " so do your thing in here, aight?"));
+            event.getGuild().getChannelByID(DataManager.getBotComChan(event.getGuild().getLongID()))
+              .sendMessage(event.getAuthor() + " Hey I can't respond to you in " + event.getChannel() + " so do your thing in here, aight?");
           }
         }
+        return null;
       }catch (DiscordException e) {
         System.err.println("Couldn't send message. Here's why:");
         e.printStackTrace();
+        return null;
       }
-    });
+    }).get();
   }
 
-  public static void sendMessage(MessageEvent event, String msg, EmbedObject obj) {
-    RequestBuffer.request(() -> {
+  public static IMessage sendLog(IChannel channel, String msg) {
+    return RequestBuffer.request(() -> {
       try {
-        event.getChannel().sendMessage(msg, obj);
+        return channel.sendMessage(msg);
+      } catch(MissingPermissionsException e) {
+        e.printStackTrace();
+        return null;
+      }catch (DiscordException e) {
+        System.err.println("Couldn't send message. Here's why:");
+        e.printStackTrace();
+        return null;
+      }
+    }).get();
+  }
+
+  public static IMessage sendLog(IChannel channel, EmbedObject msg) {
+    return RequestBuffer.request(() -> {
+      try {
+        return channel.sendMessage(msg);
+      } catch(MissingPermissionsException e) {
+        e.printStackTrace();
+        return null;
+      }catch (DiscordException e) {
+        System.err.println("Couldn't send message. Here's why:");
+        e.printStackTrace();
+        return null;
+      }
+    }).get();
+  }
+
+  public static IMessage sendMessage(MessageEvent event, String msg, EmbedObject obj) {
+    return RequestBuffer.request(() -> {
+      try {
+        return event.getChannel().sendMessage(msg, obj);
       } catch(MissingPermissionsException e) {
         if (DataManager.getBotComChan(event.getGuild().getLongID()) != -2L) {
           if (DataManager.getBotComChan(event.getGuild().getLongID()) == -1L) {
             if (DataManager.getBotComChan(event.getGuild().getLongID(), event.getAuthor().getLongID()) != -1L) {
-              RequestBuffer.request(() -> MainBot.cli.getOrCreatePMChannel(event.getAuthor()).sendMessage(
+              MainBot.cli.getOrCreatePMChannel(event.getAuthor()).sendMessage(
                 "Hey, would you mind telling the staff in `" + event.getGuild().getName() + "` that I can't respond to you in " + event.getChannel()
-                  + " because I am missing message sending perms. Thank you! ;D\np.s. if you don't want this notification just respond with `j.disable " + event.getGuild().getLongID() + "`"));
+                  + " because I am missing message sending perms. Thank you! ;D\np.s. if you don't want this notification just respond with `" + prefix + "disable " + event.getGuild().getLongID() + "`");
             }
           } else {
-            RequestBuffer.request(() -> event.getGuild().getChannelByID(DataManager.getBotComChan(event.getGuild().getLongID()))
-              .sendMessage(event.getAuthor() + " Hey I can't respond to you in " + event.getChannel() + " so do your thing in here, aight?"));
+            event.getGuild().getChannelByID(DataManager.getBotComChan(event.getGuild().getLongID()))
+              .sendMessage(event.getAuthor() + " Hey I can't respond to you in " + event.getChannel() + " so do your thing in here, aight?");
           }
         }
+        return null;
       }catch (DiscordException e) {
         System.err.println("Couldn't send message. Here's why:");
         e.printStackTrace();
+        return null;
       }
-    });
+    }).get();
   }
 
 
-  public static void sendMessage(MessageEvent event, String s, InputStream image, String s1) {
-    RequestBuffer.request(() -> {
+  public static IMessage sendMessage(MessageEvent event, String s, InputStream image, String s1) {
+    return RequestBuffer.request(() -> {
       try {
-        event.getChannel().sendFile(s, image, s1);
+        return event.getChannel().sendFile(s, image, s1);
       } catch(MissingPermissionsException e) {
         if (DataManager.getBotComChan(event.getGuild().getLongID()) != -2L) {
           if (DataManager.getBotComChan(event.getGuild().getLongID()) == -1L) {
             if (DataManager.getBotComChan(event.getGuild().getLongID(), event.getAuthor().getLongID()) != -1L) {
-              RequestBuffer.request(() -> MainBot.cli.getOrCreatePMChannel(event.getAuthor()).sendMessage(
+              MainBot.cli.getOrCreatePMChannel(event.getAuthor()).sendMessage(
                 "Hey, would you mind telling the staff in `" + event.getGuild().getName() + "` that I can't respond to you in " + event.getChannel()
-                  + " because I am missing message sending perms. Thank you! ;D\np.s. if you don't want this notification just respond with `j.disable " + event.getGuild().getLongID() + "`"));
+                  + " because I am missing message sending perms. Thank you! ;D\np.s. if you don't want this notification just respond with `" + prefix + "disable " + event.getGuild().getLongID() + "`");
             }
           } else {
-            RequestBuffer.request(() -> event.getGuild().getChannelByID(DataManager.getBotComChan(event.getGuild().getLongID()))
-              .sendMessage(event.getAuthor() + " Hey I can't respond to you in " + event.getChannel() + " so do your thing in here, aight?"));
+            event.getGuild().getChannelByID(DataManager.getBotComChan(event.getGuild().getLongID()))
+              .sendMessage(event.getAuthor() + " Hey I can't respond to you in " + event.getChannel() + " so do your thing in here, aight?");
           }
         }
+        return null;
       }catch (DiscordException e) {
         System.err.println("Couldn't send message. Here's why:");
         e.printStackTrace();
+        return null;
       }
-    });
+    }).get();
   }
 
   public static boolean botCommand(String t) {
     boolean r = false;
 
-    if (t.startsWith("j.") || t.startsWith("+") || t.startsWith("!") || t.startsWith("?")
+    if (t.startsWith(prefix) || t.startsWith("+") || t.startsWith("!") || t.startsWith("?")
         || t.startsWith("-") || t.startsWith("b.") || t.startsWith("f'") || t.startsWith("p!")
         || t.startsWith("=") || t.startsWith(".")) {
       r = true;

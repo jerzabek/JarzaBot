@@ -1,28 +1,53 @@
 {
-	"Moderation": {
-		"warn": "warn @user 'reason'\n\n\n\nAdd the specified warning to the specified user. (ex: warn @jarza didnt show bob)",
-		"warnl": "warnl [@user]\n\nDisplays all warnings in guild. If you tag a user then it will list his warnings only. (ex: warnl)",
-		"warnc": "warnc @user [number]\n\nClears all warnings for the specified user, unless the ordinal number of a warning from the user is specified. (ex: warnc @jarza 3)",
-		"warnr": "warnr role\n\nAdds a role to the pool of roles which can manage user warnings, if no role is provided it lists all warning roles. (ex: warnr staff)",
-		"warnp": "warnp kick/ban numberOfWarns\n\nA user will be kicked or banned once they reach numberOfWarns warnings. (ex: warnp kick 3)",
-		"modr": "modr [role]\n\nAdds a role to the pool of roles which can manage the bot settings on this server, if no role is provided it lists all moderation roles. (ex: modr Admins)",
-		"rule": "rule commandName allow/deny channel (and or) role\n\nAllows or denies a commands usage in that channel and or role, which ever is specified. (ex: rule say deny general), (ex: rule say allow general staff)",
-		"roleids": "roleids\n\nPrints out all role names with their respective IDs. It's safer to use IDs rather than textual names of roles or channels.",
-		"backuppins": "backuppins [channelName]\n\nIf this feature is enabled, once a channel has more than ~40 pins it will save the oldest pins in a specified channel, or create a new one called Pins if no channel name is given.",
-		"ruler": "ruler [number] [number]\n\nDisplays all rules in the server, removes a rule if one number is specified and swaps two rules if two numbers are specified. (ex: ruler 1)",
-		"kick": "kick @user [reason]\n\nKicks the tagged user with the given reason. (ex: kick @jarza succs)",
-		"ban": "ban @user [reason]\n\nBans the tagged user with the given reason. (ex: ban @jarza he didn't gib me succ)",
-		"quote": "quote messageID\n\nShows the message with that ID. (ex: j.quote 376046836278099968)"
-	},
-	"Fun": {
-		"meme": "meme [@user]\n\nGets one of the saved quotes for that guild, or a user if one is specified. (ex: meme @jarza)",
-		"say": "say text\n\nThe bot will say that text and delete the commanders message. (ex: say I am autonomous. Robots will rise.)",
-		"satansbae": "satansbae\n\nThe bot will quote some spicy Omar Varela lyrics.",
-		"dating": "dating\n\nGenerates a dating advert.",
-		"ud": "ud [word or phrase]\n\nYou don't know what some word means? Look it up on urban dictionary. (ex: ud 4chan)"
-	}, 
-	"Utility": {
-		"invite": "invite\n\nShares the bot invite link if you want to invite Jarzu to your own server.",
-		"disable": "disable [serverid]\n\nIf the bot can't respond to you in the channel you used a command in, it will, depending on the server's settings, respond to you either in the selected bot commands channel OR in the DMs. You can disable getting the DM by running the command it will tell you directly in the DMs, or in any server with Jarzu in it"
-	}
+  "Moderation": {
+    "warn": "warn @user 'reason'\n\n\n\nAdd the specified warning to the specified user. (ex: warn @jarza didnt show bob)",
+    "warnl": "warnl [@user]\n\nDisplays all warnings in guild. If you tag a user then it will list his warnings only. (ex: warnl)",
+    "warnc": "warnc @user [number]\n\nClears all warnings for the specified user, unless the ordinal number of a warning from the user is specified. (ex: warnc @jarza 3)",
+    "warnr": "warnr role\n\nAdds a role to the pool of roles which can manage user warnings, if no role is provided it lists all warning roles. (ex: warnr staff)",
+    "warnp": "warnp kick/ban numberOfWarns\n\nA user will be kicked or banned once they reach numberOfWarns warnings. (ex: warnp kick 3)",
+    "modr": "modr [role]\n\nAdds a role to the pool of roles which can manage the bot settings on this server, if no role is provided it lists all moderation roles. (ex: modr Admins)",
+    "rule": "rule commandName allow/deny channel (and or) role\n\nAllows or denies a commands usage in that channel and or role, which ever is specified. (ex: rule say deny general), (ex: rule say allow general staff)",
+    "roleids": "roleids\n\nPrints out all role names with their respective IDs. It's safer to use IDs rather than textual names of roles or channels.",
+    "backuppins": "backuppins [channelName]\n\nIf this feature is enabled, once a channel has more than ~40 pins it will save the oldest pins in a specified channel, or create a new one called Pins if no channel name is given.",
+    "ruler": "ruler [number] [number]\n\nDisplays all rules in the server, removes a rule if one number is specified and swaps two rules if two numbers are specified. (ex: ruler 1)",
+    "kick": "kick @user [reason]\n\nKicks the tagged user with the given reason. (ex: kick @jarza succs)",
+    "ban": "ban @user [reason]\n\nBans the tagged user with the given reason. (ex: ban @jarza he didn't gib me succ)",
+    "quote": "quote messageID\n\nShows the message with that ID. (ex: quote 376046836278099968)",
+    "botchannel": "botchannel #channel/dms/remove\n\nYou can choose a channel to be used as the bot channel, when someone tries to use a command outside of that channel, the bot will tag them in the selected bot channel. Also you can use `botchannel dms` to allow or deny the bot sending people DMs if the bot can not respond to them because of permissions, note this has nothing to do with the selected bot channel.",
+    "moderation": "Commands to moderate your server. You should set up modr and warnr immediatelly, so that you prevent someone taking control of the bot.",
+    "purge": "purge n [@user]\n\nThis will delete the n most recent messages in the current channel, or if a user is tagged than his n most recent messages in the current cahnnel will be deleted. (ex: purge 39 @jarza#1289)"
+  },
+  "Fun": {
+    "meme": "meme [@user]\n\nGets one of the saved quotes for that guild, or a user if one is specified. Also, if it's a bad meme or you don't want it you can remove it if you react to it with :b: (ex: meme @jarza)",
+    "say": "say text\n\nThe bot will say that text and delete the commanders message. (ex: say I am autonomous. Robots will rise.)",
+    "satansbae": "satansbae\n\nThe bot will quote some spicy Omar Varela lyrics.",
+    "dating": "dating\n\nGenerates a dating advert.",
+    "ud": "ud [word or phrase]\n\nYou don't know what some word means? Look it up on urban dictionary. (ex: ud 4chan)",
+    "fun": "Funny meme-y commands one can use to entertain him/apache helicopter/her self.",
+    "globalmeme": "globalmeme [name/@user]\n\nShows you a meme that is global across all servers. Your meme becomes global when it gets a :star: from 5 people.",
+    "roll": "roll [cap]\n\nThis will roll a dice and give you a random number (1 - 6), or if you've specified a number that will be the upper limit. "
+  },
+  "Utility": {
+    "invite": "invite\n\nShares the bot invite link if you want to invite Hund to your own server.",
+    "disable": "disable [serverid]\n\nIf the bot can't respond to you in the channel you used a command in, it will, depending on the server's settings, respond to you  in the selected bot commands channel OR in the DMs. You can disable getting the DM by running the command it will tell you directly in the DMs, or in any server with Hund in it",
+    "info": "info [@user]\n\nDisplays some basic discord stats for the user initiating the command or the user that is tagged.",
+    "serverinfo": "serverinfo\n\nDisplays some basic stats for the discord server you are currently in.",
+    "about": "about\n\nDisplays some stats for the bot.",
+    "utility": "Useful commands about the bot",
+    "convertdist": "convertdist number (metric unit from which...) (...metric unit to which to convert)\n\nIt converts metric values from one unit to another. It somewhat works. (Imperial to imperial might work sometimes) (ex: convertdist 3 km m)",
+    "convert": "**Premium feature**\nconvert number currency1 currency2\n\nConverts currencies. Note this command is only availiable to users and servers with the Hund Premium package. (ex: convert 1 btc usd)",
+    "premium": "premium [@user]\n\nSays if this server has the Hund Premium package. If you tag a user it will tell you if they have access to the Premium package.",
+    "discrim": "discrim someDiscriminator [max number of users to display]\n\nThis will list as many people with the specified discriminator, or as many people as you want to see. If you have access to the Premium package then you will also be able to see the most used discriminator on the server, by not entering any arguments after the command. (ex: discrim 1289 4)",
+    "ar": "ar [optional message]\n\nWhen you active this autoresponser, it will respond with a message it picked or you assigned it whenever someone tags you in any server with Hund"
+  },
+  "Music": {
+    "p": "p song name/link\n\nIf you are in a voice chat Hund will join you and play this song, or add it to the queue. (ex: p youtu.be/dQw4w9WgXcQ)",
+    "q": "q [song number]\n\nShows you the queued songs. If there are more songs on the queue than there fit in one embed, check the queue from [song number] onwards (ex: q or q 3)",
+    "qr": "qr number\n\nRemoves the specified song from the queue",
+    "skip": "skip\n\nSkips the current song. (ex: skip)",
+    "playing": "playing\n\nShows what song is currently playing. (ex: playing)",
+    "join": "join\n\nJoins you in a voice channel, if you are in one.",
+    "leave": "leave\n\nLeaves the voicechannel, if Hund is in one.",
+    "music": "This bot offers you a music player.\nYou can start adding songs to the queue with the `p` command, and check the current queue with the `q` command, and the current song with the `playing` command. If you want to remove a song from the queue just use the `qr` command. If you want the bot to join your channel use the `join` command, same concept goes for the `leave` command."
+  }
 }

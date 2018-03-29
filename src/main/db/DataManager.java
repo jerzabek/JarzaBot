@@ -1,14 +1,15 @@
 package main.db;
 
+import exceptions.InvalidMemeException;
+import exceptions.InvalidWarningException;
+import main.MainBot;
+import main.UserPremiumObject;
+import main.Util;
 import main.commands.ChatCommands;
 import main.commands.memes.Meme;
 import main.commands.moderation.Permission;
 import main.commands.moderation.Setting;
 import main.commands.moderation.Warning;
-import exceptions.InvalidMemeException;
-import exceptions.InvalidWarningException;
-import main.MainBot;
-import main.Util;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,24 +22,12 @@ import java.util.List;
 import java.util.Random;
 
 
-/**
- * W.I.P.
- * <br>
- * Storage will go to JSON format.
- * <br>
- * TODO:
- * <br>
- * &#07;finish translation (done)
- * <br>
- * &#07;document all files and fix this whole class
- * <br>
- * &#07;move old things to new format (nope don't wanna/don't have to)
- */
+
 public class DataManager {
 
-  public final static String SETTINGS = "settings.json", MEMES = "memes.json", WARNS = "warnings.json";
-  public static JSONObject settings, warns;
-  public static JSONArray memes;
+  public final static String SETTINGS = "settings.json", MEMES = "memes.json", WARNS = "warnings.json", GLMEMES = "globalmemes.json", PREMIUMS = "premiumusers.json";
+  public static JSONObject settings, warns, premiums;
+  public static JSONArray memes, globalmemes;
   public static JSONObject newSettingsObj, botchanObj;
 
   /**
@@ -49,7 +38,9 @@ public class DataManager {
     try {
       settings = (JSONObject) (new JSONParser().parse(new FileReader(SETTINGS)));
       memes = (JSONArray) (new JSONParser().parse(new FileReader(MEMES)));
+      globalmemes = (JSONArray) (new JSONParser().parse(new FileReader(GLMEMES)));
       warns = (JSONObject) (new JSONParser().parse(new FileReader(WARNS)));
+      premiums = (JSONObject) (new JSONParser().parse(new FileReader(PREMIUMS)));
 
       newSettingsObj = new JSONObject();
 
@@ -59,6 +50,7 @@ public class DataManager {
       sets.put(Setting.WARNR, new JSONArray());
       sets.put(Setting.MODR,  new JSONArray());
       sets.put(Setting.PINCHAN, -1);
+      sets.put(Setting.LOGGINGCHANNEL, -1L);
 
       botchanObj = new JSONObject();
       botchanObj.put(Setting.CHANID, -2);
@@ -71,6 +63,7 @@ public class DataManager {
 
       newSettingsObj.put(Setting.SETTINGSF, sets);
       newSettingsObj.put(Setting.PERMSF, newperms);
+      newSettingsObj.put(Setting.PREMIUM, false);
 
     } catch (Throwable e) {
       e.printStackTrace();
@@ -118,23 +111,16 @@ public class DataManager {
   public static Meme getMeme(Long guildid) {
     Meme fin;
 
-    ArrayList<JSONObject> l = new ArrayList<>();
-    for (Object a : memes) {
-//      System.out.println(a.toString());
-      if (((JSONObject) a).get(Meme.GUILDF).equals(guildid)) {
-//        System.out.println("found shit");
-        l.add((JSONObject) a);
-      }
-    }
     JSONObject memeobj;
 
-    if(!l.isEmpty()) {
-//      System.out.println("only meme random chose");
-      memeobj = l.get(new Random().nextInt(l.size()));
+    Object[] obja = memes.stream().filter(a -> ((JSONObject) a).get(Meme.GUILDF).equals(guildid)).toArray();
+
+    if (obja.length > 0){
+      memeobj = (JSONObject) obja[new Random().nextInt(obja.length)];
     }else {
-//      System.out.println("no meme found");
       return new Meme("No maymays found /shrug", -1L, 0L, "");
     }
+
     Object[] atts = {};
     if (!((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).isEmpty()) {
       atts = ((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).toArray();
@@ -624,8 +610,10 @@ public class DataManager {
 
     JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
     JSONObject sets = (JSONObject) sets4g.get(Setting.SETTINGSF);
+    JSONObject botch = (JSONObject) sets.get(Setting.BOTCHAN);
 
-    sets.put(Setting.BOTCHAN, channelid);
+    botch.put(Setting.CHANID, channelid);
+    sets.put(Setting.BOTCHAN, botch);
     sets4g.put(Setting.SETTINGSF, sets);
     settings.put(guildid.toString(), sets4g);
   }
@@ -651,6 +639,192 @@ public class DataManager {
     settings.put(guildid.toString(), sets4g);
   }
 
+  public static void saveGlobalMeme(Meme maymay) throws InvalidMemeException{
+    if (maymay.text.length() > 255) {
+      throw new InvalidMemeException("Meme too long, didn't save it.");
+    }else if(maymay == null){
+      throw new InvalidMemeException("Meme can not be null");
+    }
+
+    JSONObject obj = new JSONObject();
+    JSONArray att;
+    try {
+      obj.put(Meme.USERF, maymay.user);
+      obj.put(Meme.GUILDF, maymay.guild);
+      obj.put(Meme.TEXTF, maymay.text);
+      obj.put(Meme.TIMESTAMPF, maymay.timestamp);
+      att = new JSONArray();
+      if (maymay.attachments.length > 0) {
+        for (Object a : maymay.attachments) {
+          att.add(att.size(), a.toString());
+        }
+      }
+    }catch(NullPointerException e){
+      throw new InvalidMemeException("Meme atribute can not be null");
+    }
+
+    obj.put("attachments", att);
+    globalmemes.add(obj);
+  }
+
+  /**
+   * Returns a random meme from the specified guild
+   * @return a random meme with all info filled in
+   */
+  public static Meme getGlobalMeme() {
+    Meme fin;
+
+    ArrayList<JSONObject> l = new ArrayList<>();
+    for (Object a : globalmemes) {
+      l.add((JSONObject) a);
+    }
+    JSONObject memeobj;
+
+    if(!l.isEmpty()) {
+      //      System.out.println("only meme random chose");
+      memeobj = l.get(new Random().nextInt(l.size()));
+    }else {
+      //      System.out.println("no meme found");
+      return new Meme("No maymays found /shrug", -1L, 0L, "");
+    }
+    Object[] atts = {};
+    if (!((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).isEmpty()) {
+      atts = ((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).toArray();
+    }
+    fin = new Meme((String) memeobj.get(Meme.TEXTF), (Long) memeobj.get(Meme.USERF), (Long) memeobj.get(Meme.GUILDF), (String) memeobj.get(Meme.TIMESTAMPF), atts);
+
+    return fin;
+  }
+
+  /**
+   * Returns a random meme for a specified user in a guild
+   * @param userid the Long user ID
+   * @return a random meme from that user in that guild
+   */
+  public static Meme getGlobalMemes(Long userid) {
+    Meme fin;
+
+    ArrayList<JSONObject> l = new ArrayList<>();
+    for (Object a : globalmemes) {
+      if (((JSONObject) a).get(Meme.USERF).equals(userid)) {
+        l.add((JSONObject) a);
+      }
+    }
+    JSONObject memeobj;
+    if(!l.isEmpty())
+      memeobj = l.get(new Random().nextInt(l.size()));
+    else
+      return new Meme("No maymays found /shrug", 0L, 0L, "");
+
+    //    System.out.println(memeobj.get(Meme.TEXTF));
+    List<String> attssl = new ArrayList<>();
+    if (!((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).isEmpty()) {
+      for(Object a : ((JSONArray) memeobj.get(Meme.ATTACHMENTSF)).toArray()){
+        attssl.add(a.toString());
+      }
+    }
+
+
+    fin = new Meme(memeobj.get(Meme.TEXTF).toString(), (Long) memeobj.get(Meme.USERF), (Long) memeobj.get(Meme.GUILDF), memeobj.get(Meme.TIMESTAMPF).toString(), attssl.toArray());
+
+    return fin;
+  }
+
+  public static void setPremiumForGuild(Long guildid, boolean a){
+    JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
+    if(sets4g == null){
+      JSONObject temp = newSettingsObj;
+      temp.put("premium", a);
+      settings.put(guildid, temp);
+    }else{
+      sets4g.put("premium", a);
+      settings.put(guildid.toString(), sets4g);
+    }
+  }
+
+  public static boolean isGuildPremium(Long guildid){
+    JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
+    if(sets4g == null){
+      settings.put(guildid, newSettingsObj);
+      return false;
+    }
+    if(sets4g.get(Setting.PREMIUM) != null){
+      return ((boolean) sets4g.get(Setting.PREMIUM));
+    }else{
+      sets4g.put(Setting.PREMIUM, false);
+      settings.put(guildid.toString(), sets4g);
+      return false;
+    }
+  }
+
+  public static boolean isUserPremium(Long userid){
+    JSONObject userprem = ((JSONObject) premiums.get(userid.toString()));
+    if(userprem == null) {
+      System.out.println("1");
+      return false;
+    }else {
+      if((boolean) userprem.get("premium")) {
+        System.out.println("2");
+        return true;
+      }
+    }
+    System.out.println("3");
+    return false;
+  }
+
+  public static void setUserPremium(Long userid, boolean a, String date) {
+    JSONObject userprem = ((JSONObject) premiums.get(userid.toString()));
+    if (userprem == null) {
+      JSONObject prems = new JSONObject();
+
+      prems.put("premium", a);
+      prems.put("premium_since", date);
+      premiums.put(userid.toString(), prems);
+    } else {
+      userprem.put("premium", a);
+      userprem.put("premium_since", date);
+      premiums.put(userid.toString(), userprem);
+    }
+  }
+
+  public static Long hasLogging(Long guildid){
+    Long res = -1L;
+    JSONObject sets4g = ((JSONObject) settings.get(guildid.toString()));
+    if(sets4g == null){
+      settings.put(guildid, newSettingsObj);
+      return res;
+    }
+    JSONObject sets = ((JSONObject) sets4g.get(Setting.SETTINGSF));
+    if(sets.get(Setting.LOGGINGCHANNEL) == null){
+      sets.put(Setting.LOGGINGCHANNEL, -1L);
+      sets4g.put(Setting.SETTINGSF, sets);
+      settings.put(sets4g, settings);
+      return res;
+    }else if(sets.getOrDefault(Setting.LOGGINGCHANNEL, -1).equals(-1L)){
+      return res;
+    }else{
+      return (Long) sets.get(Setting.LOGGINGCHANNEL);
+    }
+  }
+
+  public static int getPremiumGuildCount(){
+    return (int) settings.values().stream().filter(n -> (boolean) ((JSONObject) n).getOrDefault("premium", false)).count();
+  }
+
+  public static UserPremiumObject getUserPremium(Long userid) {
+    JSONObject userprem = ((JSONObject) premiums.get(userid.toString()));
+    if (userprem == null)
+      return null;
+    else {
+      return new UserPremiumObject(userid, userprem.get("premium_since").toString(), (boolean) userprem.get("premium"));
+    }
+  }
+
+  public static int getPremiumUserCount() {
+    return (int) premiums.values().stream().filter(n -> (boolean) ((JSONObject) n).getOrDefault("premium", false)).count();
+  }
+
+
   /**
    * Saves all data to the JSON files.
    */
@@ -667,16 +841,19 @@ public class DataManager {
         fw.close();
         fw = new FileWriter(WARNS);
         fw.write(warns.toJSONString());
-//        fw.flush();
-//        fw.close();
-//        fw = new FileWriter("config.json");
-//        fw.write(MainBot.config.toJSONString());
         fw.flush();
         fw.close();
         fw = new FileWriter("config.json");
-        Long a = (Long) MainBot.config.get("commands");
-        MainBot.config.put("commands", a + Util.totcom);
+        MainBot.config.put("commands", Util.totcom);
         fw.write(MainBot.config.toJSONString());
+        fw.flush();
+        fw.close();
+        fw = new FileWriter(GLMEMES);
+        fw.write(globalmemes.toJSONString());
+        fw.flush();
+        fw.close();
+        fw = new FileWriter(PREMIUMS);
+        fw.write(premiums.toJSONString());
       } catch (Throwable e) {
         e.printStackTrace();
       } finally {

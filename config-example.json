@@ -1,4 +1,5 @@
 {
 	"key": "mySuperSpicyBotKeyThatYouShouldn'tShareWithAnyone",
-	"owner": "yourUserID"
+	"owner": "yourUserID",
+	"commands": 1800
 }

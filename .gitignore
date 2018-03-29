@@ -6,6 +6,7 @@ JarzaBot.iml
 config.json
 memes.json
 settings.json
+premiumusers.json
 warnings.json
 modules/
 lib/
