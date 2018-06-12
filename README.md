@@ -1,4 +1,4 @@
-# JarzaBot
-Discord bot in java.
+# ***This repo is discontinued***
 
-*veri advanced*
+
+Project continued [here](https://github.com/jerzabek/HundBot)
